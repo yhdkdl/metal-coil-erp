@@ -1,0 +1,8 @@
+"use client";
+import Link from "next/link";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { register } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+export default function RegisterPage() { const [name,setName]=useState(""); const [email,setEmail]=useState(""); const [password,setPassword]=useState(""); const [error,setError]=useState(""); const router=useRouter(); async function submit(event: FormEvent) { event.preventDefault(); try { const result=await register(email,password,name); localStorage.setItem("access_token",result.access_token); localStorage.setItem("user_role",result.user.role); router.push("/"); } catch (e) { setError(e instanceof Error ? e.message : "Unable to register"); } } return <main className="flex min-h-screen items-center justify-center bg-slate-950 p-6"><form onSubmit={submit} className="w-full max-w-md space-y-5 rounded-xl bg-white p-8"><h1 className="text-2xl font-semibold">Create account</h1><input required placeholder="Full name" value={name} onChange={(e)=>setName(e.target.value)} className="h-11 w-full rounded-md border px-3" /><input required type="email" placeholder="Email" value={email} onChange={(e)=>setEmail(e.target.value)} className="h-11 w-full rounded-md border px-3" /><input required minLength={8} type="password" placeholder="Password (8+ characters)" value={password} onChange={(e)=>setPassword(e.target.value)} className="h-11 w-full rounded-md border px-3" />{error && <p className="text-sm text-red-600">{error}</p>}<Button className="w-full">Create account</Button><p className="text-center text-sm text-slate-500">Already registered? <Link href="/login" className="font-medium text-slate-900">Sign in</Link></p></form></main>; }
+
