@@ -1,6 +1,6 @@
 # Metal Coil Traceability & Sales ERP
 
-Phase 1 provides the monorepo foundation, PostgreSQL schema, JWT authentication, role-aware navigation, and a working Next.js UI shell. Production, warehouse operations, sales, and reporting workflows are deferred to Phase 2.
+Phase 2 adds coil receipt, production runs, staged output pieces, automatic cost allocation, and end-to-end traceability. Transfers, sales, and reporting remain deferred.
 
 ## Run the project
 
@@ -18,7 +18,7 @@ python -m app.seed
 uvicorn app.main:app --reload
 ```
 
-The seed creates `admin@metalcoil.local` with password `Admin123!`, two warehouses, and three sample coils.
+The seed creates `admin@metalcoil.com` with password `Admin123!`, two warehouses, and four sample coils.
 
 ### Frontend
 
@@ -37,3 +37,9 @@ Open http://localhost:3000.
 - Login/register API and frontend pages with JWT-based role checks.
 - Dashboard shell and module placeholders.
 - Operational production, transfers, sales, and reporting logic are deferred to Phase 2.
+
+## Phase 2 Workflow
+
+Receive Coil -> Start Production Run -> Add Output Pieces -> Complete Run -> View Pieces.
+
+Coil detail shows source metadata, production totals, and every generated piece. Piece detail shows its source coil, production run, allocated cost, warehouse status, and stock movement trace.

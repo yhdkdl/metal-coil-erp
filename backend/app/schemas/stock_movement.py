@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_serializer
 from app.models.stock_movement import MovementType
 
 class StockMovementRead(BaseModel):
@@ -16,4 +16,6 @@ class StockMovementRead(BaseModel):
     note: str | None
     created_at: datetime
     created_by_id: UUID
-
+    @field_serializer("weight_kg")
+    def serialize_decimal(self, value: Decimal) -> str:
+        return str(value)

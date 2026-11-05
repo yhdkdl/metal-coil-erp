@@ -21,6 +21,7 @@ class ProducedPiece(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     piece_code: Mapped[str] = mapped_column(String(100), unique=True)
     parent_coil_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("coils.id"))
+    production_run_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("production_runs.id"), nullable=True)
     thickness_mm: Mapped[Decimal] = mapped_column(Numeric(12, 3))
     width_mm: Mapped[Decimal] = mapped_column(Numeric(12, 3))
     length_mm: Mapped[Decimal] = mapped_column(Numeric(12, 3))
@@ -32,4 +33,3 @@ class ProducedPiece(Base):
     status: Mapped[PieceStatus] = mapped_column(Enum(PieceStatus, name="piece_status"), default=PieceStatus.IN_MAIN)
     current_warehouse_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("warehouses.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-

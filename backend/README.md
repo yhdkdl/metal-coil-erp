@@ -14,4 +14,4 @@ python -m app.seed
 uvicorn app.main:app --reload
 ```
 
-Phase 1 includes the schema, JWT authentication endpoints, role dependencies, and seed data. Production, sales, and reporting workflows are intentionally deferred to Phase 2.
+Phase 2 includes coil receipt, production run staging/completion, automatic piece generation and cost allocation, and traceability. Transfers, sales, and reporting remain deferred.
