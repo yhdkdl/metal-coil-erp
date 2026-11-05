@@ -1,4 +1,4 @@
-import { AuthResponse, Coil, CoilDetail, CoilInput, Payment, PaymentMethod, Piece, PieceTrace, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, Sale, SaleDetail, SaleStatus, SaleType, StockTransfer, StockTransferResult, Warehouse } from "@/types";
+import { AuthResponse, Coil, CoilDetail, CoilInput, InventoryValuation, Payment, PaymentMethod, Piece, PieceTrace, PriceHistory, ProfitByCoil, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, RevenueReport, Sale, SaleDetail, SaleStatus, SaleType, StockTransfer, StockTransferResult, Warehouse } from "@/types";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 export class ApiError extends Error { status: number; details?: unknown; constructor(message: string, status: number, details?: unknown) { super(message); this.name = "ApiError"; this.status = status; this.details = details; } }
 function errorMessage(value: unknown): string {
@@ -55,4 +55,9 @@ export const api = {
   createSale: (input: { sale_type: SaleType; customer_name: string; warehouse_id: string; line_items: { piece_id: string; sale_price: string }[]; notes?: string }) => request<SaleDetail>("/sales/", { method: "POST", body: JSON.stringify(input) }),
   recordPayment: (id: string, input: { amount: string; method: PaymentMethod; reference?: string }) => request<Payment>(`/sales/${id}/payments`, { method: "POST", body: JSON.stringify(input) }),
   cancelSale: (id: string) => request<SaleDetail>(`/sales/${id}/cancel`, { method: "POST" }),
+  getRevenueReport: (params?: { from?: string; to?: string; granularity?: string; channel?: string; warehouse_id?: string }) => request<RevenueReport>(`/reports/revenue${query(params)}`),
+  getProfitByCoil: (params?: { from?: string; to?: string }) => request<ProfitByCoil[]>(`/reports/profit-by-coil${query(params)}`),
+  getInventoryValuation: () => request<InventoryValuation>("/reports/inventory-valuation"),
+  getPriceHistory: (id: string) => request<PriceHistory[]>(`/pieces/${id}/price-history`),
+  bulkPriceUpdate: (input: { filter: { grade?: string; category?: string; warehouse_id?: string }; adjustment: { type: "percent" | "absolute"; value: string }; reason?: string }) => request<{ affected_count: number; pieces: Piece[]; skipped_count: number }>("/pieces/bulk-price-update", { method: "POST", body: JSON.stringify(input) }),
 };

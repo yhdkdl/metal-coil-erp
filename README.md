@@ -59,3 +59,10 @@ Coil detail shows source metadata, production totals, and every generated piece.
 3. Review the server-calculated total and confirm the sale.
 4. Open the sale detail and record a payment no greater than the amount due.
 5. A full payment changes the sale status to `PAID`; sold pieces remain unavailable.
+
+## Reading daily / weekly / monthly revenue
+
+1. Sign in as Finance and open **Finance → Revenue**.
+2. Select day, week, or month granularity to regroup completed, partial, and paid sales.
+3. Review revenue, COGS, and gross profit; cancelled sales are excluded.
+4. Use **Export CSV** to download the current table.

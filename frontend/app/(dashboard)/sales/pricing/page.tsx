@@ -1,0 +1,11 @@
+"use client";
+import { FormEvent, useState } from "react";
+import { api } from "@/lib/api";
+import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
+
+export default function PricingPage() {
+  const [grade, setGrade] = useState(""); const [category, setCategory] = useState(""); const [type, setType] = useState<"percent" | "absolute">("percent"); const [value, setValue] = useState(""); const [reason, setReason] = useState(""); const [message, setMessage] = useState("");
+  async function submit(event: FormEvent) { event.preventDefault(); setMessage(""); if (!window.confirm("Apply this price update to all matching unsold pieces?")) return; try { const result = await api.bulkPriceUpdate({ filter: { grade: grade || undefined, category: category || undefined }, adjustment: { type, value }, reason: reason || undefined }); setMessage(`Updated ${result.affected_count} pieces; skipped ${result.skipped_count}.`); } catch (e) { setMessage(e instanceof Error ? e.message : "Unable to update prices"); } }
+  return <section><PageHeader title="Pricing" description="Bulk update selling prices for unsold pieces." /><form onSubmit={submit} className="max-w-xl space-y-4 rounded-xl border bg-white p-6"><input value={grade} onChange={(e) => setGrade(e.target.value)} placeholder="Grade (optional)" className="h-10 w-full rounded-md border px-3" /><input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Category (optional)" className="h-10 w-full rounded-md border px-3" /><select value={type} onChange={(e) => setType(e.target.value as "percent" | "absolute")} className="h-10 w-full rounded-md border px-3"><option value="percent">Percent adjustment</option><option value="absolute">Absolute adjustment</option></select><input required type="number" step="0.01" value={value} onChange={(e) => setValue(e.target.value)} placeholder="Adjustment value" className="h-10 w-full rounded-md border px-3" /><input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason (optional)" className="h-10 w-full rounded-md border px-3" /><Button>Apply update</Button>{message && <p className="text-sm text-slate-600">{message}</p>}</form></section>;
+}
