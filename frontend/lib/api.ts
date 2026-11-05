@@ -1,5 +1,5 @@
 import { AuthResponse, Coil, CoilDetail, CoilInput, InventoryValuation, Payment, PaymentMethod, Piece, PieceTrace, PriceHistory, ProfitByCoil, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, RevenueReport, Sale, SaleDetail, SaleStatus, SaleType, StockTransfer, StockTransferResult, Warehouse } from "@/types";
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8001/api/v1";
 export class ApiError extends Error { status: number; details?: unknown; constructor(message: string, status: number, details?: unknown) { super(message); this.name = "ApiError"; this.status = status; this.details = details; } }
 function errorMessage(value: unknown): string {
   if (typeof value === "string") return value;
