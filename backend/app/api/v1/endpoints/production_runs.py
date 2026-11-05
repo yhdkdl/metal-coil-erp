@@ -22,7 +22,7 @@ def list_production_runs(db: DbSession, status: ProductionRunStatus | None = Non
     return list(db.scalars(query))
 
 @router.get("/{run_id}", response_model=ProductionRunDetail)
-def get_production_run(run_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION))]):
+def get_production_run(run_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION, UserRole.WAREHOUSE, UserRole.SALES, UserRole.FINANCE))]):
     run = db.get(ProductionRun, run_id)
     if not run:
         raise HTTPException(404, "Production run not found")

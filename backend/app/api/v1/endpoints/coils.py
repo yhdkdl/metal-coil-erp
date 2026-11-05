@@ -22,7 +22,7 @@ def list_coils(db: DbSession, status: CoilStatus | None = None, q: str | None = 
     return list(db.scalars(query))
 
 @router.get("/{coil_id}", response_model=CoilDetail)
-def get_coil(coil_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.FINANCE))]):
+def get_coil(coil_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))]):
     coil = db.get(Coil, coil_id)
     if not coil:
         raise HTTPException(404, "Coil not found")
