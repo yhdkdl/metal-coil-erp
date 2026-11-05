@@ -43,3 +43,11 @@ Open http://localhost:3000.
 Receive Coil -> Start Production Run -> Add Output Pieces -> Complete Run -> View Pieces.
 
 Coil detail shows source metadata, production totals, and every generated piece. Piece detail shows its source coil, production run, allocated cost, warehouse status, and stock movement trace.
+
+## Transferring pieces from Main to Outlet
+
+1. Sign in as a Warehouse user and open **Transfers**.
+2. Select the outlet warehouse and check one or more pieces currently in Main.
+3. Confirm the transfer after reviewing the running piece count and total weight.
+4. The transfer is recorded as one grouped audit event, and each piece moves to `IN_OUTLET`.
+5. Open a piece to review its complete movement history, including the transfer.
