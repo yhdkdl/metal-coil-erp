@@ -51,3 +51,11 @@ Coil detail shows source metadata, production totals, and every generated piece.
 3. Confirm the transfer after reviewing the running piece count and total weight.
 4. The transfer is recorded as one grouped audit event, and each piece moves to `IN_OUTLET`.
 5. Open a piece to review its complete movement history, including the transfer.
+
+## Recording a bulk sale and full payment
+
+1. Sign in as Sales and open **Sales → New sale**.
+2. Select the Bulk channel, customer, Main warehouse, and available pieces.
+3. Review the server-calculated total and confirm the sale.
+4. Open the sale detail and record a payment no greater than the amount due.
+5. A full payment changes the sale status to `PAID`; sold pieces remain unavailable.
