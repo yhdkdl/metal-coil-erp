@@ -1,4 +1,19 @@
 export type Role = "ADMIN" | "PRODUCTION" | "WAREHOUSE" | "SALES" | "FINANCE";
 export type User = { id: string; email: string; full_name: string; role: Role };
 export type AuthResponse = { access_token: string; token_type: string; user: User };
-
+export type DecimalString = string;
+export type CoilStatus = "IN_STOCK" | "IN_PRODUCTION" | "CONSUMED";
+export type PieceStatus = "IN_MAIN" | "IN_OUTLET" | "SOLD";
+export type ProductionRunStatus = "OPEN" | "COMPLETED" | "CANCELLED";
+export type Coil = { id: string; coil_number: string; heat_number: string; supplier: string; grade: string; thickness_mm: DecimalString; width_mm: DecimalString; total_weight_kg: DecimalString; cost_per_kg: DecimalString; total_cost: DecimalString; status: CoilStatus; created_at: string };
+export type Piece = { id: string; piece_code: string; parent_coil_id: string; thickness_mm: DecimalString; width_mm: DecimalString; length_mm: DecimalString; weight_kg: DecimalString; grade: string; category: string; allocated_cost: DecimalString; selling_price?: DecimalString | null; status: PieceStatus; current_warehouse_id: string; created_at: string };
+export type ProductionRun = { id: string; coil_id: string; machine_type: string; operator_id: string; status: ProductionRunStatus; started_at: string; completed_at?: string | null };
+export type ProductionOutput = { id: string; production_run_id: string; thickness_mm: DecimalString; width_mm: DecimalString; length_mm: DecimalString; weight_kg: DecimalString; grade: string; category: string; created_at: string };
+export type ProductionRunDetail = ProductionRun & { outputs: ProductionOutput[] };
+export type CoilDetail = Coil & { pieces: Piece[]; production_runs?: ProductionRun[] };
+export type PieceTrace = { piece: Piece; parent_coil: Coil | null; production_run: ProductionRun | null; movements: StockMovement[] };
+export type StockMovement = { id: string; piece_id?: string | null; coil_id?: string | null; movement_type: string; from_warehouse_id?: string | null; to_warehouse_id?: string | null; weight_kg: DecimalString; note?: string | null; created_at: string; created_by_id: string };
+export type CoilInput = { coil_number: string; heat_number: string; supplier: string; grade: string; thickness_mm: string; width_mm: string; total_weight_kg: string; cost_per_kg: string };
+export type ProductionRunInput = { coil_id: string; machine_type: string };
+export type ProductionOutputInput = Omit<ProductionOutput, "id" | "production_run_id" | "created_at">;
+export type CreatedPiece = Piece;
