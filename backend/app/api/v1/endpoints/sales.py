@@ -64,6 +64,8 @@ def create_sale(
             raise HTTPException(422, "One or more pieces are not available for this sale channel and warehouse")
         if item.sale_price <= 0:
             raise HTTPException(422, "Sale prices must be positive")
+        if item.sale_price < piece.min_selling_price:
+            raise HTTPException(422, f"Sale price for {piece.piece_code} cannot be below minimum {piece.min_selling_price}")
 
     total = _money(sum((item.sale_price for item in payload.line_items), Decimal("0")))
     now = datetime.now(timezone.utc)

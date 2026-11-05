@@ -15,14 +15,14 @@ from app.api.deps import DbSession, require_roles
 router = APIRouter()
 
 @router.get("/", response_model=list[ProductionRunRead])
-def list_production_runs(db: DbSession, status: ProductionRunStatus | None = None, coil_id=None, _: Annotated[User, Depends(get_current_user)] = None):
+def list_production_runs(db: DbSession, status: ProductionRunStatus | None = None, coil_id=None, _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION))] = None):
     query = select(ProductionRun).order_by(ProductionRun.started_at.desc())
     if status: query = query.where(ProductionRun.status == status)
     if coil_id: query = query.where(ProductionRun.coil_id == coil_id)
     return list(db.scalars(query))
 
 @router.get("/{run_id}", response_model=ProductionRunDetail)
-def get_production_run(run_id, db: DbSession, _: Annotated[User, Depends(get_current_user)]):
+def get_production_run(run_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION))]):
     run = db.get(ProductionRun, run_id)
     if not run:
         raise HTTPException(404, "Production run not found")
@@ -68,9 +68,18 @@ def add_output(run_id, payload: ProductionRunOutputCreate, db: DbSession, _: Ann
     limit = coil.total_weight_kg * Decimal("1.005")
     if total + payload.weight_kg > limit:
         raise HTTPException(422, "Output weight exceeds source coil weight")
-    output = ProductionRunOutput(production_run_id=run.id, created_at=datetime.now(timezone.utc), **payload.model_dump())
-    db.add(output); db.commit(); db.refresh(output)
-    return output
+    values = payload.model_dump()
+    quantity = values.pop("quantity", 1)
+    if total + (values["weight_kg"] * quantity) > limit:
+        raise HTTPException(422, "Output quantity exceeds source coil weight")
+    outputs = []
+    for _ in range(quantity):
+        output = ProductionRunOutput(production_run_id=run.id, created_at=datetime.now(timezone.utc), **values)
+        db.add(output)
+        outputs.append(output)
+    db.commit()
+    db.refresh(outputs[0])
+    return outputs[0]
 
 @router.delete("/{run_id}/outputs/{output_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_output(run_id, output_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION))]):
@@ -116,6 +125,7 @@ def complete_production_run(run_id, db: DbSession, _: Annotated[User, Depends(re
             thickness_mm=item.thickness_mm, width_mm=item.width_mm, length_mm=item.length_mm,
             weight_kg=item.weight_kg, grade=item.grade, category=item.category,
             allocated_cost=(item.weight_kg * run_coil.cost_per_kg).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+            min_selling_price=(item.weight_kg * run_coil.cost_per_kg).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
             status=PieceStatus.IN_MAIN, current_warehouse_id=warehouse.id,
         )
         db.add(piece); db.flush()

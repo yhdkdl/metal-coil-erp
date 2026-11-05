@@ -154,6 +154,8 @@ def bulk_price_update(
             new_price = (old_price or MONEY_ZERO) + payload.adjustment.value
         if new_price <= 0:
             raise HTTPException(422, "Price update would produce a non-positive price")
+        if new_price < piece.min_selling_price:
+            raise HTTPException(422, f"Price update for {piece.piece_code} would fall below minimum {piece.min_selling_price}")
         piece.selling_price = new_price
         db.add(PriceHistory(piece_id=piece.id, old_price=old_price, new_price=new_price, changed_by_id=user.id, reason=payload.reason))
         affected.append(piece)

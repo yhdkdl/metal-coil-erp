@@ -17,11 +17,12 @@ class PieceRead(BaseModel):
     grade: str
     category: str
     allocated_cost: Decimal
+    min_selling_price: Decimal
     selling_price: Decimal | None
     status: PieceStatus
     current_warehouse_id: UUID
     created_at: datetime
-    @field_serializer("thickness_mm", "width_mm", "length_mm", "weight_kg", "allocated_cost", "selling_price")
+    @field_serializer("thickness_mm", "width_mm", "length_mm", "weight_kg", "allocated_cost", "min_selling_price", "selling_price")
     def serialize_decimal(self, value: Decimal | None) -> str | None:
         return str(value) if value is not None else None
 

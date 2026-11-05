@@ -1,4 +1,4 @@
-import { AuthResponse, Coil, CoilDetail, CoilInput, InventoryValuation, Payment, PaymentMethod, Piece, PieceTrace, PriceHistory, ProfitByCoil, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, RevenueReport, Sale, SaleDetail, SaleStatus, SaleType, StockTransfer, StockTransferResult, Warehouse } from "@/types";
+import { AdminUserInput, AuthResponse, Coil, CoilDetail, CoilInput, InventoryValuation, Payment, PaymentMethod, Piece, PieceTrace, PriceHistory, ProfitByCoil, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, RevenueReport, Role, Sale, SaleDetail, SaleStatus, SaleType, StockTransfer, StockTransferResult, User, Warehouse } from "@/types";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8001/api/v1";
 export class ApiError extends Error { status: number; details?: unknown; constructor(message: string, status: number, details?: unknown) { super(message); this.name = "ApiError"; this.status = status; this.details = details; } }
 function errorMessage(value: unknown): string {
@@ -53,6 +53,7 @@ export const api = {
   cancelProductionRun: (id: string) => request<ProductionRun>(`/production-runs/${id}/cancel`, { method: "POST" }),
   tracePiece: (id: string) => request<PieceTrace>(`/pieces/${id}/trace`),
   getPieceTrace: (id: string) => request<PieceTrace>(`/pieces/${id}/trace`),
+  updatePiecePrice: (id: string, input: { selling_price: string; reason?: string }) => request<Piece>(`/pieces/${id}/price`, { method: "PATCH", body: JSON.stringify(input) }),
   listWarehouses: () => request<Warehouse[]>("/warehouses/"),
   listStockTransfers: (params?: { from?: string; to?: string; warehouse_id?: string }) => request<StockTransfer[]>(`/stock-transfers/${query(params)}`),
   createStockTransfer: (input: { piece_ids: string[]; to_warehouse_id: string; note?: string }) => request<StockTransferResult>("/stock-transfers/", { method: "POST", body: JSON.stringify(input) }),
@@ -66,4 +67,7 @@ export const api = {
   getInventoryValuation: () => request<InventoryValuation>("/reports/inventory-valuation"),
   getPriceHistory: (id: string) => request<PriceHistory[]>(`/pieces/${id}/price-history`),
   bulkPriceUpdate: (input: { filter: { grade?: string; category?: string; warehouse_id?: string }; adjustment: { type: "percent" | "absolute"; value: string }; reason?: string }) => request<{ affected_count: number; pieces: Piece[]; skipped_count: number }>("/pieces/bulk-price-update", { method: "POST", body: JSON.stringify(input) }),
+  listUsers: () => request<User[]>("/users/"),
+  createUser: (input: AdminUserInput) => request<User>("/users/", { method: "POST", body: JSON.stringify(input) }),
+  updateUser: (id: string, input: { full_name?: string; role?: Role }) => request<User>(`/users/${id}`, { method: "PATCH", body: JSON.stringify(input) }),
 };

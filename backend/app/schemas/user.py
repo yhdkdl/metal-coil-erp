@@ -6,7 +6,13 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
+
+class AdminUserCreate(UserCreate):
     role: UserRole = UserRole.SALES
+
+class UserUpdate(BaseModel):
+    full_name: str | None = None
+    role: UserRole | None = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -23,4 +29,3 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserRead
-

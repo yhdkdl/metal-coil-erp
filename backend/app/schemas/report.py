@@ -76,6 +76,11 @@ class PriceHistoryRead(BaseModel):
         return str(value) if value is not None else None
 
 
+class PriceUpdate(BaseModel):
+    selling_price: Decimal = Field(gt=0)
+    reason: str | None = Field(default=None, max_length=255)
+
+
 class PriceAdjustment(BaseModel):
     type: str = Field(pattern="^(percent|absolute)$")
     value: Decimal

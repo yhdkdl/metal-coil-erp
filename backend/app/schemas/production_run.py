@@ -21,7 +21,7 @@ class ProductionRunCreate(BaseModel):
 class ProductionRunUpdate(BaseModel):
     machine_type: str | None = Field(default=None, min_length=1, max_length=100)
 
-class ProductionRunOutputCreate(BaseModel):
+class ProductionRunOutputBase(BaseModel):
     thickness_mm: Decimal = Field(gt=0)
     width_mm: Decimal = Field(gt=0)
     length_mm: Decimal = Field(gt=0)
@@ -29,7 +29,10 @@ class ProductionRunOutputCreate(BaseModel):
     grade: str
     category: str
 
-class ProductionRunOutputRead(ProductionRunOutputCreate):
+class ProductionRunOutputCreate(ProductionRunOutputBase):
+    quantity: int = Field(default=1, ge=1, le=10000)
+
+class ProductionRunOutputRead(ProductionRunOutputBase):
     id: UUID
     production_run_id: UUID
     created_at: datetime
