@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.db.base import Base
-from app.models import Coil, CoilStatus, ProductionRunOutput, User, UserRole, Warehouse, WarehouseType
+from app.models import Coil, CoilStatus, MovementType, ProducedPiece, ProductionRunOutput, StockMovement, User, UserRole, Warehouse, WarehouseType, PieceStatus
 from app.schemas.coil import CoilRead
 from app.schemas.production_run import ProductionRunCreate, ProductionRunOutputCreate
 from app.api.v1.endpoints.production_runs import (
@@ -16,6 +16,8 @@ from app.api.v1.endpoints.production_runs import (
     complete_production_run,
     create_production_run,
 )
+from app.api.v1.endpoints.stock_transfers import create_stock_transfer
+from app.schemas.stock_transfer import StockTransferCreate
 
 
 @pytest.fixture
@@ -87,3 +89,59 @@ def test_output_weight_and_dimensions_must_be_positive():
             length_mm=Decimal("2000"), weight_kg=Decimal("10"),
             grade="S235", category="Sheet",
         )
+
+
+def create_piece(db, coil, warehouse, code, status=PieceStatus.IN_MAIN):
+    piece = ProducedPiece(
+        piece_code=code, parent_coil_id=coil.id, thickness_mm=Decimal("1"),
+        width_mm=Decimal("100"), length_mm=Decimal("1000"), weight_kg=Decimal("10"),
+        grade="S235", category="SHEET", allocated_cost=Decimal("10"),
+        status=status, current_warehouse_id=warehouse.id,
+    )
+    db.add(piece)
+    db.commit()
+    return piece
+
+
+def test_transfer_moves_pieces_with_shared_group_and_is_idempotent(db):
+    user, main, coil = setup_data(db)
+    outlet = Warehouse(name="Outlet", type=WarehouseType.OUTLET)
+    db.add(outlet)
+    db.commit()
+    pieces = [create_piece(db, coil, main, f"C-1-00{index}") for index in range(1, 4)]
+
+    result = create_stock_transfer(
+        StockTransferCreate(piece_ids=[piece.id for piece in pieces], to_warehouse_id=outlet.id),
+        db, user,
+    )
+
+    assert result.moved_count == 3
+    movements = db.query(StockMovement).filter(StockMovement.movement_type == MovementType.TRANSFER).all()
+    assert len(movements) == 3
+    assert len({movement.transfer_group_id for movement in movements}) == 1
+    assert all(piece.status == PieceStatus.IN_OUTLET for piece in pieces)
+    with pytest.raises(HTTPException) as duplicate:
+        create_stock_transfer(
+            StockTransferCreate(piece_ids=[piece.id for piece in pieces], to_warehouse_id=outlet.id),
+            db, user,
+        )
+    assert duplicate.value.status_code == 409
+
+
+def test_transfer_rolls_back_when_one_piece_is_invalid(db):
+    user, main, coil = setup_data(db)
+    outlet = Warehouse(name="Outlet", type=WarehouseType.OUTLET)
+    db.add(outlet)
+    db.commit()
+    valid = create_piece(db, coil, main, "C-1-001")
+    sold = create_piece(db, coil, main, "C-1-002", PieceStatus.SOLD)
+
+    with pytest.raises(HTTPException) as rejected:
+        create_stock_transfer(
+            StockTransferCreate(piece_ids=[valid.id, sold.id], to_warehouse_id=outlet.id),
+            db, user,
+        )
+    assert rejected.value.status_code == 422
+    db.refresh(valid)
+    assert valid.status == PieceStatus.IN_MAIN
+    assert db.query(StockMovement).filter(StockMovement.movement_type == MovementType.TRANSFER).count() == 0

@@ -9,6 +9,7 @@ class StockMovementRead(BaseModel):
     id: UUID
     piece_id: UUID | None
     coil_id: UUID | None
+    transfer_group_id: UUID | None
     movement_type: MovementType
     from_warehouse_id: UUID | None
     to_warehouse_id: UUID | None

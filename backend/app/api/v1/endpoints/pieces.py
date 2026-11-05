@@ -9,7 +9,7 @@ from app.schemas.piece import PieceRead
 from app.models.piece import ProducedPiece
 from app.models.stock_movement import StockMovement
 from app.models.coil import Coil
-from app.models.production_run import ProductionRun, ProductionRunOutput
+from app.models.production_run import ProductionRun
 from app.schemas.coil import CoilRead
 from app.schemas.production_run import ProductionRunRead
 from app.schemas.stock_movement import StockMovementRead
@@ -46,3 +46,12 @@ def trace_piece(piece_id, db: DbSession, _: Annotated[User, Depends(get_current_
         "production_run": ProductionRunRead.model_validate(run) if run else None,
         "movements": [StockMovementRead.model_validate(m) for m in movements],
     }
+
+@router.get("/{piece_id}/movements", response_model=list[StockMovementRead])
+def piece_movements(piece_id, db: DbSession, _: Annotated[User, Depends(get_current_user)]):
+    if not db.get(ProducedPiece, piece_id):
+        raise HTTPException(404, "Piece not found")
+    movements = select(StockMovement).where(
+        StockMovement.piece_id == piece_id
+    ).order_by(StockMovement.created_at, StockMovement.id)
+    return list(db.scalars(movements))

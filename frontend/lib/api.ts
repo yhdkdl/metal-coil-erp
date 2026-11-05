@@ -1,4 +1,4 @@
-import { AuthResponse, Coil, CoilDetail, CoilInput, Piece, PieceTrace, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput } from "@/types";
+import { AuthResponse, Coil, CoilDetail, CoilInput, Piece, PieceTrace, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, StockTransfer, StockTransferResult, Warehouse } from "@/types";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 export class ApiError extends Error { status: number; details?: unknown; constructor(message: string, status: number, details?: unknown) { super(message); this.name = "ApiError"; this.status = status; this.details = details; } }
 function errorMessage(value: unknown): string {
@@ -35,7 +35,7 @@ export const api = {
   getCoil: (id: string) => request<CoilDetail>(`/coils/${id}`),
   getCoilDetail: (id: string) => request<CoilDetail>(`/coils/${id}`),
   createCoil: (input: CoilInput) => request<Coil>("/coils/", { method: "POST", body: JSON.stringify(input) }),
-  listPieces: (params?: { status?: string; parent_coil_id?: string; skip?: number; limit?: number }) => request<Piece[]>(`/pieces/${query(params)}`),
+  listPieces: (params?: { status?: string; coil_id?: string; warehouse_id?: string; category?: string; q?: string }) => request<Piece[]>(`/pieces/${query(params)}`),
   getPiece: (id: string) => request<Piece>(`/pieces/${id}`),
   listProductionRuns: (params?: { status?: string; coil_id?: string; skip?: number; limit?: number }) => request<ProductionRun[]>(`/production-runs/${query(params)}`),
   getProductionRun: (id: string) => request<ProductionRunDetail>(`/production-runs/${id}`),
@@ -47,4 +47,7 @@ export const api = {
   cancelProductionRun: (id: string) => request<ProductionRun>(`/production-runs/${id}/cancel`, { method: "POST" }),
   tracePiece: (id: string) => request<PieceTrace>(`/pieces/${id}/trace`),
   getPieceTrace: (id: string) => request<PieceTrace>(`/pieces/${id}/trace`),
+  listWarehouses: () => request<Warehouse[]>("/warehouses/"),
+  listStockTransfers: (params?: { from?: string; to?: string; warehouse_id?: string }) => request<StockTransfer[]>(`/stock-transfers/${query(params)}`),
+  createStockTransfer: (input: { piece_ids: string[]; to_warehouse_id: string; note?: string }) => request<StockTransferResult>("/stock-transfers/", { method: "POST", body: JSON.stringify(input) }),
 };
