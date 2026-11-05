@@ -31,7 +31,7 @@ npm run dev
 
 Open http://localhost:3000.
 
-The frontend defaults to `http://127.0.0.1:8000/api/v1`; if `frontend/.env.local` exists, make sure `NEXT_PUBLIC_API_URL` matches the URL where Uvicorn is running. Restart the Next.js dev server after changing it.
+The frontend defaults to `http://127.0.0.1:8001/api/v1`; if `frontend/.env.local` exists, make sure `NEXT_PUBLIC_API_URL` matches the URL where Uvicorn is running. Restart the Next.js dev server after changing it.
 
 ## Phase 1 scope
 
