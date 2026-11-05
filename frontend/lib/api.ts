@@ -1,4 +1,4 @@
-import { AuthResponse, Coil, CoilDetail, CoilInput, Piece, PieceTrace, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, StockTransfer, StockTransferResult, Warehouse } from "@/types";
+import { AuthResponse, Coil, CoilDetail, CoilInput, Payment, PaymentMethod, Piece, PieceTrace, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, Sale, SaleDetail, SaleStatus, SaleType, StockTransfer, StockTransferResult, Warehouse } from "@/types";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 export class ApiError extends Error { status: number; details?: unknown; constructor(message: string, status: number, details?: unknown) { super(message); this.name = "ApiError"; this.status = status; this.details = details; } }
 function errorMessage(value: unknown): string {
@@ -50,4 +50,9 @@ export const api = {
   listWarehouses: () => request<Warehouse[]>("/warehouses/"),
   listStockTransfers: (params?: { from?: string; to?: string; warehouse_id?: string }) => request<StockTransfer[]>(`/stock-transfers/${query(params)}`),
   createStockTransfer: (input: { piece_ids: string[]; to_warehouse_id: string; note?: string }) => request<StockTransferResult>("/stock-transfers/", { method: "POST", body: JSON.stringify(input) }),
+  listSales: (params?: { from?: string; to?: string; channel?: SaleType; status?: SaleStatus; customer?: string }) => request<Sale[]>(`/sales/${query(params)}`),
+  getSale: (id: string) => request<SaleDetail>(`/sales/${id}`),
+  createSale: (input: { sale_type: SaleType; customer_name: string; warehouse_id: string; line_items: { piece_id: string; sale_price: string }[]; notes?: string }) => request<SaleDetail>("/sales/", { method: "POST", body: JSON.stringify(input) }),
+  recordPayment: (id: string, input: { amount: string; method: PaymentMethod; reference?: string }) => request<Payment>(`/sales/${id}/payments`, { method: "POST", body: JSON.stringify(input) }),
+  cancelSale: (id: string) => request<SaleDetail>(`/sales/${id}/cancel`, { method: "POST" }),
 };
