@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 from decimal import Decimal
-from pydantic import BaseModel, ConfigDict, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 from app.models.production_run import ProductionRunStatus
 
 class ProductionRunRead(BaseModel):
@@ -16,17 +16,16 @@ class ProductionRunRead(BaseModel):
 
 class ProductionRunCreate(BaseModel):
     coil_id: UUID
-    machine_type: str
+    machine_type: str = Field(min_length=1, max_length=100)
 
 class ProductionRunUpdate(BaseModel):
-    machine_type: str | None = None
-    status: ProductionRunStatus | None = None
+    machine_type: str | None = Field(default=None, min_length=1, max_length=100)
 
 class ProductionRunOutputCreate(BaseModel):
-    thickness_mm: Decimal
-    width_mm: Decimal
-    length_mm: Decimal
-    weight_kg: Decimal
+    thickness_mm: Decimal = Field(gt=0)
+    width_mm: Decimal = Field(gt=0)
+    length_mm: Decimal = Field(gt=0)
+    weight_kg: Decimal = Field(gt=0)
     grade: str
     category: str
 

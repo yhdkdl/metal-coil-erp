@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 from app.schemas.piece import PieceRead
 from app.models.coil import CoilStatus
 
@@ -37,10 +37,10 @@ class CoilCreate(BaseModel):
     heat_number: str
     supplier: str
     grade: str
-    thickness_mm: Decimal
-    width_mm: Decimal
-    total_weight_kg: Decimal
-    cost_per_kg: Decimal
+    thickness_mm: Decimal = Field(gt=0)
+    width_mm: Decimal = Field(gt=0)
+    total_weight_kg: Decimal = Field(gt=0)
+    cost_per_kg: Decimal = Field(gt=0)
 
 class CoilUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")

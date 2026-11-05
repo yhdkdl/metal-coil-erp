@@ -2,6 +2,7 @@ from decimal import Decimal
 from uuid import uuid4
 
 import pytest
+from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -69,3 +70,20 @@ def test_cancellation_releases_coil(db):
     cancelled = cancel_production_run(run.id, db, user)
     assert cancelled.status.value == "CANCELLED"
     assert db.get(Coil, coil.id).status == CoilStatus.IN_STOCK
+
+
+def test_completion_requires_at_least_one_output(db):
+    user, _, coil = setup_data(db)
+    run = create_production_run(ProductionRunCreate(coil_id=coil.id, machine_type="Slitter"), db, user)
+
+    with pytest.raises(HTTPException, match="At least one output is required"):
+        complete_production_run(run.id, db, user)
+
+
+def test_output_weight_and_dimensions_must_be_positive():
+    with pytest.raises(ValueError):
+        ProductionRunOutputCreate(
+            thickness_mm=Decimal("0"), width_mm=Decimal("100"),
+            length_mm=Decimal("2000"), weight_kg=Decimal("10"),
+            grade="S235", category="Sheet",
+        )

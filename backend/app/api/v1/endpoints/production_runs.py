@@ -39,8 +39,6 @@ def update_production_run(run_id, payload: ProductionRunUpdate, db: DbSession, _
         raise HTTPException(409, "Production run is closed")
     if payload.machine_type is not None:
         run.machine_type = payload.machine_type
-    if payload.status is not None:
-        run.status = payload.status
     db.commit(); db.refresh(run)
     return run
 
@@ -50,7 +48,7 @@ def create_production_run(payload: ProductionRunCreate, db: DbSession, user: Ann
     if not coil:
         raise HTTPException(404, "Coil not found")
     if coil.status != CoilStatus.IN_STOCK:
-        raise HTTPException(409, "Coil is not available for production")
+        raise HTTPException(422, "Coil is not available for production")
     coil.status = CoilStatus.IN_PRODUCTION
     run = ProductionRun(coil_id=coil.id, machine_type=payload.machine_type, operator_id=user.id,
                         status=ProductionRunStatus.OPEN, started_at=datetime.now(timezone.utc))
@@ -66,7 +64,7 @@ def add_output(run_id, payload: ProductionRunOutputCreate, db: DbSession, _: Ann
     coil = db.get(Coil, run.coil_id)
     total = db.scalar(select(func.coalesce(func.sum(ProductionRunOutput.weight_kg), 0)).where(
         ProductionRunOutput.production_run_id == run.id
-    ))
+    )) or Decimal("0")
     limit = coil.total_weight_kg * Decimal("1.005")
     if total + payload.weight_kg > limit:
         raise HTTPException(422, "Output weight exceeds source coil weight")
@@ -97,6 +95,8 @@ def complete_production_run(run_id, db: DbSession, _: Annotated[User, Depends(re
         ProductionRunOutput.production_run_id == run.id
     ).order_by(ProductionRunOutput.created_at, ProductionRunOutput.id)))
     output_weight = sum((item.weight_kg for item in outputs), Decimal("0"))
+    if not outputs:
+        raise HTTPException(422, "At least one output is required")
     if output_weight > run_coil.total_weight_kg * Decimal("1.005"):
         raise HTTPException(422, "Output weight exceeds source coil weight")
     warehouse = db.scalar(select(Warehouse).where(Warehouse.type == WarehouseType.MAIN))
