@@ -58,7 +58,7 @@ def piece_movements(piece_id, db: DbSession, _: Annotated[User, Depends(require_
     return list(db.scalars(movements))
 
 @router.patch("/{piece_id}/price", response_model=PieceRead)
-def update_piece_price(piece_id, payload: PriceUpdate, db: DbSession, user: Annotated[User, Depends(require_roles(UserRole.SALES))]):
+def update_piece_price(piece_id, payload: PriceUpdate, db: DbSession, user: Annotated[User, Depends(require_roles(UserRole.FINANCE))]):
     piece = db.get(ProducedPiece, piece_id)
     if not piece:
         raise HTTPException(404, "Piece not found")

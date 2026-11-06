@@ -120,7 +120,7 @@ def inventory_valuation(
 
 
 @pricing_router.get("/pieces/{piece_id}/price-history", response_model=list[PriceHistoryRead])
-def piece_price_history(piece_id: UUID, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.FINANCE, UserRole.SALES))]):
+def piece_price_history(piece_id: UUID, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.FINANCE))]):
     if not db.get(ProducedPiece, piece_id):
         raise HTTPException(404, "Piece not found")
     return list(db.scalars(select(PriceHistory).where(PriceHistory.piece_id == piece_id).order_by(PriceHistory.changed_at, PriceHistory.id)))
@@ -130,7 +130,7 @@ def piece_price_history(piece_id: UUID, db: DbSession, _: Annotated[User, Depend
 def bulk_price_update(
     payload: BulkPriceUpdate,
     db: DbSession,
-    user: Annotated[User, Depends(require_roles(UserRole.SALES))],
+    user: Annotated[User, Depends(require_roles(UserRole.FINANCE))],
 ):
     query = select(ProducedPiece).where(ProducedPiece.status != PieceStatus.SOLD).with_for_update()
     filters = payload.filter

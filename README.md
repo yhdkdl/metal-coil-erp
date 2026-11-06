@@ -20,7 +20,7 @@ uvicorn app.main:app --reload
 
 The seed creates `admin@metalcoil.com` with password `Admin123!`, two warehouses, and four sample coils.
 
-Admins can create and assign users at `/admin/users`. Sales users can set individual piece prices from a piece detail page, subject to the piece's minimum selling price (allocated cost). Production output entry supports a quantity for identical pieces; the backend expands the batch into individual traceable pieces.
+Admins can create and assign users at `/admin/users`. Finance and Admin users set piece prices from the dedicated `/sales/pricing` page or a piece detail page, subject to the piece's minimum selling price (allocated cost). Sales users can only charge the preset price; they cannot modify it during sale creation. Production output entry supports a quantity for identical pieces; the backend expands the batch into individual traceable pieces.
 
 ### Frontend
 
