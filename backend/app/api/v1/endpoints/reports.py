@@ -4,7 +4,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import case, func, select
 from typing import Annotated
 
 from app.api.deps import DbSession, require_roles
@@ -27,6 +27,8 @@ def _range(from_date: date | None, to_date: date | None) -> tuple[datetime, date
 
 def _period_start(value: datetime, granularity: str) -> datetime:
     value = value.astimezone(timezone.utc)
+    if granularity == "year":
+        return value.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     if granularity == "month":
         return value.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     if granularity == "week":
@@ -36,6 +38,8 @@ def _period_start(value: datetime, granularity: str) -> datetime:
 
 
 def _next_period(start: datetime, granularity: str) -> datetime:
+    if granularity == "year":
+        return start.replace(year=start.year + 1, month=1, day=1)
     if granularity == "month":
         year = start.year + (1 if start.month == 12 else 0)
         month = 1 if start.month == 12 else start.month + 1
@@ -48,7 +52,7 @@ def revenue_report(
     db: DbSession,
     from_date: date | None = Query(default=None, alias="from"),
     to_date: date | None = Query(default=None, alias="to"),
-    granularity: str = Query(default="day", pattern="^(day|week|month)$"),
+    granularity: str = Query(default="day", pattern="^(day|week|month|year)$"),
     channel: str = Query(default="both", pattern="^(BULK|RETAIL|both)$"),
     warehouse_id: UUID | None = None,
     _: Annotated[User, Depends(require_roles(UserRole.FINANCE))] = None,
@@ -91,13 +95,29 @@ def profit_by_coil(
 ):
     start, end = _range(from_date, to_date)
     coils = list(db.scalars(select(Coil).order_by(Coil.coil_number)))
+    all_pieces = list(db.scalars(select(ProducedPiece)))
+    pieces_by_coil: dict[UUID, list[ProducedPiece]] = {}
+    for piece in all_pieces:
+        pieces_by_coil.setdefault(piece.parent_coil_id, []).append(piece)
+    sold_piece_ids = [piece.id for piece in all_pieces if piece.status == PieceStatus.SOLD]
+    sold_items = list(db.execute(
+        select(SaleLineItem, Sale).join(Sale, Sale.id == SaleLineItem.sale_id).where(
+            SaleLineItem.piece_id.in_(sold_piece_ids),
+            Sale.created_at >= start,
+            Sale.created_at <= end,
+            Sale.status.in_([SaleStatus.COMPLETED, SaleStatus.PARTIAL, SaleStatus.PAID]),
+        )
+    )) if sold_piece_ids else []
+    items_by_piece: dict[UUID, list[SaleLineItem]] = {}
+    for item, _sale in sold_items:
+        items_by_piece.setdefault(item.piece_id, []).append(item)
     rows = []
     for coil in coils:
-        pieces = list(db.scalars(select(ProducedPiece).where(ProducedPiece.parent_coil_id == coil.id)))
+        pieces = pieces_by_coil.get(coil.id, [])
         sold = [piece for piece in pieces if piece.status == PieceStatus.SOLD]
-        sold_items = list(db.scalars(select(SaleLineItem).join(Sale).where(SaleLineItem.piece_id.in_([piece.id for piece in sold]), Sale.created_at >= start, Sale.created_at <= end, Sale.status.in_([SaleStatus.COMPLETED, SaleStatus.PARTIAL, SaleStatus.PAID])))) if sold else []
-        revenue = sum((item.sale_price for item in sold_items), MONEY_ZERO)
-        cogs = sum((piece.allocated_cost for piece in sold if any(item.piece_id == piece.id for item in sold_items)), MONEY_ZERO)
+        coil_items = [item for piece in sold for item in items_by_piece.get(piece.id, [])]
+        revenue = sum((item.sale_price for item in coil_items), MONEY_ZERO)
+        cogs = sum((piece.allocated_cost for piece in sold if piece.id in items_by_piece), MONEY_ZERO)
         rows.append(ProfitByCoilRow(coil_number=coil.coil_number, coil_cost=coil.total_cost, pieces_sold_count=len(sold), pieces_unsold_count=len(pieces) - len(sold), revenue=revenue, cogs=cogs, gross_profit=revenue - cogs))
     return rows
 
@@ -107,20 +127,30 @@ def inventory_valuation(
     db: DbSession,
     _: Annotated[User, Depends(require_roles(UserRole.FINANCE))] = None,
 ):
-    pieces = list(db.scalars(select(ProducedPiece).where(ProducedPiece.status != PieceStatus.SOLD)))
-    warehouses = {warehouse.id: warehouse for warehouse in db.scalars(select(Warehouse))}
-    grouped: dict[UUID, list[ProducedPiece]] = {}
-    for piece in pieces:
-        grouped.setdefault(piece.current_warehouse_id, []).append(piece)
-    rows = []
-    for warehouse_id, items in grouped.items():
-        warehouse = warehouses[warehouse_id]
-        rows.append(InventoryWarehouseValue(warehouse_id=warehouse_id, warehouse_name=warehouse.name, piece_count=len(items), cost_value=sum((item.allocated_cost for item in items), MONEY_ZERO), list_value=sum((item.selling_price or MONEY_ZERO for item in items), MONEY_ZERO)))
-    return InventoryValuation(by_warehouse=rows, total_pieces=len(pieces), total_cost_value=sum((item.allocated_cost for item in pieces), MONEY_ZERO), total_list_value=sum((item.selling_price or MONEY_ZERO for item in pieces), MONEY_ZERO), null_price_count=sum(item.selling_price is None for item in pieces))
+    available = ProducedPiece.status != PieceStatus.SOLD
+    rows_query = select(
+        Warehouse.id,
+        Warehouse.name,
+        func.count(ProducedPiece.id),
+        func.coalesce(func.sum(ProducedPiece.allocated_cost), MONEY_ZERO),
+        func.coalesce(func.sum(func.coalesce(ProducedPiece.selling_price, MONEY_ZERO)), MONEY_ZERO),
+    ).join(ProducedPiece, ProducedPiece.current_warehouse_id == Warehouse.id).where(available).group_by(Warehouse.id, Warehouse.name)
+    aggregate_query = select(
+        func.count(ProducedPiece.id),
+        func.coalesce(func.sum(ProducedPiece.allocated_cost), MONEY_ZERO),
+        func.coalesce(func.sum(func.coalesce(ProducedPiece.selling_price, MONEY_ZERO)), MONEY_ZERO),
+        func.coalesce(func.sum(case((ProducedPiece.selling_price.is_(None), 1), else_=0)), 0),
+    ).where(available)
+    rows = [
+        InventoryWarehouseValue(warehouse_id=warehouse_id, warehouse_name=name, piece_count=count, cost_value=cost_value, list_value=list_value)
+        for warehouse_id, name, count, cost_value, list_value in db.execute(rows_query)
+    ]
+    total_pieces, total_cost, total_list, null_prices = db.execute(aggregate_query).one()
+    return InventoryValuation(by_warehouse=rows, total_pieces=total_pieces, total_cost_value=total_cost, total_list_value=total_list, null_price_count=null_prices)
 
 
 @pricing_router.get("/pieces/{piece_id}/price-history", response_model=list[PriceHistoryRead])
-def piece_price_history(piece_id: UUID, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.FINANCE, UserRole.SALES))]):
+def piece_price_history(piece_id: UUID, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.FINANCE))]):
     if not db.get(ProducedPiece, piece_id):
         raise HTTPException(404, "Piece not found")
     return list(db.scalars(select(PriceHistory).where(PriceHistory.piece_id == piece_id).order_by(PriceHistory.changed_at, PriceHistory.id)))
@@ -130,14 +160,16 @@ def piece_price_history(piece_id: UUID, db: DbSession, _: Annotated[User, Depend
 def bulk_price_update(
     payload: BulkPriceUpdate,
     db: DbSession,
-    user: Annotated[User, Depends(require_roles(UserRole.SALES))],
+    user: Annotated[User, Depends(require_roles(UserRole.FINANCE))],
 ):
     query = select(ProducedPiece).where(ProducedPiece.status != PieceStatus.SOLD).with_for_update()
-    filters = payload.filter
+    filters = payload.filter.model_dump(exclude_none=True)
     if filters.get("grade"):
         query = query.where(ProducedPiece.grade == filters["grade"])
     if filters.get("category"):
         query = query.where(ProducedPiece.category == filters["category"])
+    if filters.get("thickness_mm") is not None:
+        query = query.where(ProducedPiece.thickness_mm == filters["thickness_mm"])
     if filters.get("warehouse_id"):
         query = query.where(ProducedPiece.current_warehouse_id == filters["warehouse_id"])
     pieces = list(db.scalars(query))
@@ -148,12 +180,16 @@ def bulk_price_update(
             skipped += 1
             continue
         old_price = piece.selling_price
-        if payload.adjustment.type == "percent":
+        if payload.adjustment.type == "set":
+            new_price = payload.adjustment.value
+        elif payload.adjustment.type == "percent":
             new_price = (old_price * (Decimal("1") + payload.adjustment.value / Decimal("100"))).quantize(Decimal("0.01"))
         else:
             new_price = (old_price or MONEY_ZERO) + payload.adjustment.value
         if new_price <= 0:
             raise HTTPException(422, "Price update would produce a non-positive price")
+        if new_price < piece.min_selling_price:
+            raise HTTPException(422, f"Price update for {piece.piece_code} would fall below minimum {piece.min_selling_price}")
         piece.selling_price = new_price
         db.add(PriceHistory(piece_id=piece.id, old_price=old_price, new_price=new_price, changed_by_id=user.id, reason=payload.reason))
         affected.append(piece)

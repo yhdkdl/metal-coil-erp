@@ -29,6 +29,7 @@ class ProducedPiece(Base):
     grade: Mapped[str] = mapped_column(String(100))
     category: Mapped[str] = mapped_column(String(100))
     allocated_cost: Mapped[Decimal] = mapped_column(Numeric(16, 2))
+    min_selling_price: Mapped[Decimal] = mapped_column(Numeric(16, 2), default=Decimal("0.00"))
     selling_price: Mapped[Decimal | None] = mapped_column(Numeric(16, 2), nullable=True)
     status: Mapped[PieceStatus] = mapped_column(Enum(PieceStatus, name="piece_status"), default=PieceStatus.IN_MAIN)
     current_warehouse_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("warehouses.id"))

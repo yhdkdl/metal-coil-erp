@@ -20,6 +20,8 @@ uvicorn app.main:app --reload
 
 The seed creates `admin@metalcoil.com` with password `Admin123!`, two warehouses, and four sample coils.
 
+Admins can create and assign users at `/admin/users`. Finance and Admin users set piece prices from the dedicated `/sales/pricing` page or a piece detail page, subject to the piece's minimum selling price (allocated cost). Sales users can only charge the preset price; they cannot modify it during sale creation. Production output entry supports a quantity for identical pieces; the backend expands the batch into individual traceable pieces.
+
 ### Frontend
 
 ```powershell
@@ -30,6 +32,8 @@ npm run dev
 ```
 
 Open http://localhost:3000.
+
+The frontend defaults to `http://127.0.0.1:8001/api/v1`; if `frontend/.env.local` exists, make sure `NEXT_PUBLIC_API_URL` matches the URL where Uvicorn is running. Restart the Next.js dev server after changing it.
 
 ## Phase 1 scope
 
@@ -43,6 +47,16 @@ Open http://localhost:3000.
 Receive Coil -> Start Production Run -> Add Output Pieces -> Complete Run -> View Pieces.
 
 Coil detail shows source metadata, production totals, and every generated piece. Piece detail shows its source coil, production run, allocated cost, warehouse status, and stock movement trace.
+
+## Performance notes
+
+- Read-only API responses are briefly cached and deduplicated in the browser, so returning to a list or opening multiple related screens does not repeat the same request unnecessarily.
+- Successful mutations invalidate the read cache, keeping inventory, sales, and finance views current after changes.
+- List endpoints use bounded pagination (100 records by default, maximum 500).
+- Database indexes cover the common status, warehouse, coil, production-run, sale-date, and movement lookups.
+- Finance inventory valuation uses SQL aggregation rather than loading every piece into Python.
+
+For a complete user test from coil receipt through sales and finance, use [DEMO_WORKFLOW.md](./DEMO_WORKFLOW.md).
 
 ## Transferring pieces from Main to Outlet
 

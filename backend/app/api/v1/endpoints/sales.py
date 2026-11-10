@@ -64,6 +64,12 @@ def create_sale(
             raise HTTPException(422, "One or more pieces are not available for this sale channel and warehouse")
         if item.sale_price <= 0:
             raise HTTPException(422, "Sale prices must be positive")
+        if piece.selling_price is None:
+            raise HTTPException(422, f"Piece {piece.piece_code} does not have a selling price")
+        if item.sale_price != piece.selling_price:
+            raise HTTPException(422, f"Sale price for {piece.piece_code} must match its preset selling price {piece.selling_price}")
+        if item.sale_price < piece.min_selling_price:
+            raise HTTPException(422, f"Sale price for {piece.piece_code} cannot be below minimum {piece.min_selling_price}")
 
     total = _money(sum((item.sale_price for item in payload.line_items), Decimal("0")))
     now = datetime.now(timezone.utc)
@@ -102,6 +108,8 @@ def list_sales(
     channel: SaleType | None = None,
     sale_status: SaleStatus | None = Query(default=None, alias="status"),
     customer: str | None = None,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
     _: Annotated[User, Depends(require_roles(UserRole.SALES, UserRole.FINANCE))] = None,
 ):
     query = select(Sale).order_by(Sale.created_at.desc())
@@ -115,7 +123,7 @@ def list_sales(
         query = query.where(Sale.status == sale_status)
     if customer:
         query = query.where(Sale.customer_name.ilike(f"%{customer}%"))
-    return list(db.scalars(query))
+    return list(db.scalars(query.limit(limit).offset(offset)))
 
 
 @router.post("/{sale_id}/payments", response_model=PaymentRead, status_code=status.HTTP_201_CREATED)

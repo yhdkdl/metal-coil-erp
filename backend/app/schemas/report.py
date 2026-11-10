@@ -76,12 +76,24 @@ class PriceHistoryRead(BaseModel):
         return str(value) if value is not None else None
 
 
+class PriceUpdate(BaseModel):
+    selling_price: Decimal = Field(gt=0)
+    reason: str | None = Field(default=None, max_length=255)
+
+
 class PriceAdjustment(BaseModel):
-    type: str = Field(pattern="^(percent|absolute)$")
+    type: str = Field(pattern="^(set|percent|absolute)$")
     value: Decimal
 
 
+class BulkPriceFilter(BaseModel):
+    grade: str | None = None
+    category: str | None = None
+    thickness_mm: Decimal | None = None
+    warehouse_id: UUID | None = None
+
+
 class BulkPriceUpdate(BaseModel):
-    filter: dict[str, str | UUID | None] = {}
+    filter: BulkPriceFilter = Field(default_factory=BulkPriceFilter)
     adjustment: PriceAdjustment
     reason: str | None = Field(default=None, max_length=255)

@@ -57,6 +57,9 @@ def setup_sale_data(db):
 
 def test_bulk_sale_marks_pieces_sold_and_creates_movements(db):
     user, main, _, pieces = setup_sale_data(db)
+    pieces[0].selling_price = Decimal("12.50")
+    pieces[1].selling_price = Decimal("20.00")
+    db.commit()
     sale = create_sale(SaleCreate(
         sale_type=SaleType.BULK, customer_name="Customer", warehouse_id=main.id,
         line_items=[SaleLineItemCreate(piece_id=pieces[0].id, sale_price=Decimal("12.50")),
@@ -88,6 +91,9 @@ def test_wrong_channel_and_duplicate_piece_are_rejected(db):
 
 def test_payment_progression_and_cancel_restore(db):
     user, main, _, pieces = setup_sale_data(db)
+    pieces[0].selling_price = Decimal("30")
+    pieces[1].selling_price = Decimal("15")
+    db.commit()
     sale = create_sale(SaleCreate(
         sale_type=SaleType.BULK, customer_name="Customer", warehouse_id=main.id,
         line_items=[SaleLineItemCreate(piece_id=pieces[0].id, sale_price=Decimal("30"))],

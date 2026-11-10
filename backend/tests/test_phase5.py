@@ -94,3 +94,25 @@ def test_inventory_valuation_and_percent_price_update(db):
     assert db.query(PriceHistory).count() == 2
     db.refresh(pieces[0])
     assert pieces[0].selling_price == Decimal("21.00")
+
+
+def test_bulk_price_update_filters_by_thickness_and_sets_exact_price(db):
+    user, _, _, pieces = setup_reporting_data(db)
+    pieces[1].thickness_mm = Decimal("2")
+    db.commit()
+
+    result = bulk_price_update(
+        BulkPriceUpdate(
+            filter={"category": "SHEET", "grade": "S235", "thickness_mm": "2"},
+            adjustment=PriceAdjustment(type="set", value=Decimal("42.50")),
+        ),
+        db,
+        user,
+    )
+
+    assert result["affected_count"] == 1
+    assert result["skipped_count"] == 0
+    db.refresh(pieces[0])
+    db.refresh(pieces[1])
+    assert pieces[0].selling_price == Decimal("20")
+    assert pieces[1].selling_price == Decimal("42.50")
