@@ -48,6 +48,16 @@ Receive Coil -> Start Production Run -> Add Output Pieces -> Complete Run -> Vie
 
 Coil detail shows source metadata, production totals, and every generated piece. Piece detail shows its source coil, production run, allocated cost, warehouse status, and stock movement trace.
 
+## Performance notes
+
+- Read-only API responses are briefly cached and deduplicated in the browser, so returning to a list or opening multiple related screens does not repeat the same request unnecessarily.
+- Successful mutations invalidate the read cache, keeping inventory, sales, and finance views current after changes.
+- List endpoints use bounded pagination (100 records by default, maximum 500).
+- Database indexes cover the common status, warehouse, coil, production-run, sale-date, and movement lookups.
+- Finance inventory valuation uses SQL aggregation rather than loading every piece into Python.
+
+For a complete user test from coil receipt through sales and finance, use [DEMO_WORKFLOW.md](./DEMO_WORKFLOW.md).
+
 ## Transferring pieces from Main to Outlet
 
 1. Sign in as a Warehouse user and open **Transfers**.

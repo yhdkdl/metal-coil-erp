@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from app.api.deps import DbSession, require_roles
 from app.api.deps import get_current_user
@@ -17,14 +17,14 @@ from app.schemas.stock_movement import StockMovementRead
 
 router = APIRouter()
 @router.get("/", response_model=list[PieceRead])
-def list_pieces(db: DbSession, status=None, coil_id=None, warehouse_id=None, q=None, category=None, _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))] = None):
+def list_pieces(db: DbSession, status=None, coil_id=None, warehouse_id=None, q=None, category=None, limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0), _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))] = None):
     query = select(ProducedPiece).order_by(ProducedPiece.created_at.desc())
     if status: query = query.where(ProducedPiece.status == status)
     if coil_id: query = query.where(ProducedPiece.parent_coil_id == coil_id)
     if warehouse_id: query = query.where(ProducedPiece.current_warehouse_id == warehouse_id)
     if q: query = query.where(ProducedPiece.piece_code.ilike(f"%{q}%"))
     if category: query = query.where(ProducedPiece.category == category)
-    return list(db.scalars(query))
+    return list(db.scalars(query.limit(limit).offset(offset)))
 
 @router.get("/{piece_id}", response_model=PieceRead)
 def get_piece(piece_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))]):

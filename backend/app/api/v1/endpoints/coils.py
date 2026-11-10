@@ -1,5 +1,5 @@
 from decimal import Decimal
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from typing import Annotated
 from sqlalchemy import func, select
 from app.api.deps import DbSession, get_current_user
@@ -13,13 +13,13 @@ from app.api.deps import require_roles
 
 router = APIRouter()
 @router.get("/", response_model=list[CoilRead])
-def list_coils(db: DbSession, status: CoilStatus | None = None, q: str | None = None, _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.FINANCE))] = None):
+def list_coils(db: DbSession, status: CoilStatus | None = None, q: str | None = None, limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0), _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.FINANCE))] = None):
     query = select(Coil).order_by(Coil.created_at.desc())
     if status:
         query = query.where(Coil.status == status)
     if q:
         query = query.where((Coil.coil_number.ilike(f"%{q}%")) | (Coil.heat_number.ilike(f"%{q}%")))
-    return list(db.scalars(query))
+    return list(db.scalars(query.limit(limit).offset(offset)))
 
 @router.get("/{coil_id}", response_model=CoilDetail)
 def get_coil(coil_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))]):

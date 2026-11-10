@@ -108,6 +108,8 @@ def list_sales(
     channel: SaleType | None = None,
     sale_status: SaleStatus | None = Query(default=None, alias="status"),
     customer: str | None = None,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
     _: Annotated[User, Depends(require_roles(UserRole.SALES, UserRole.FINANCE))] = None,
 ):
     query = select(Sale).order_by(Sale.created_at.desc())
@@ -121,7 +123,7 @@ def list_sales(
         query = query.where(Sale.status == sale_status)
     if customer:
         query = query.where(Sale.customer_name.ilike(f"%{customer}%"))
-    return list(db.scalars(query))
+    return list(db.scalars(query.limit(limit).offset(offset)))
 
 
 @router.post("/{sale_id}/payments", response_model=PaymentRead, status_code=status.HTTP_201_CREATED)

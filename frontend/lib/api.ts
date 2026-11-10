@@ -1,5 +1,8 @@
 import { AdminUserInput, AuthResponse, Coil, CoilDetail, CoilInput, InventoryValuation, Payment, PaymentMethod, Piece, PieceTrace, PriceHistory, ProfitByCoil, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, RevenueReport, Role, Sale, SaleDetail, SaleStatus, SaleType, StockTransfer, StockTransferResult, User, Warehouse } from "@/types";
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8001/api/v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const GET_CACHE_TTL = 15_000;
+const cache = new Map<string, { expiresAt: number; value: unknown }>();
+const inFlight = new Map<string, Promise<unknown>>();
 export class ApiError extends Error { status: number; details?: unknown; constructor(message: string, status: number, details?: unknown) { super(message); this.name = "ApiError"; this.status = status; this.details = details; } }
 function errorMessage(value: unknown): string {
   if (typeof value === "string") return value;
@@ -8,11 +11,23 @@ function errorMessage(value: unknown): string {
   return "Request failed";
 }
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  if (!API_URL) {
+    throw new ApiError("NEXT_PUBLIC_API_URL is not configured.", 0);
+  }
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
+  const method = (init.method ?? "GET").toUpperCase();
+  const cacheKey = `${method}:${path}`;
+  if (method === "GET") {
+    const cached = cache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) return cached.value as T;
+    const pending = inFlight.get(cacheKey);
+    if (pending) return pending as Promise<T>;
+  }
   let response: Response;
+  const fetchRequest = async (): Promise<T> => {
   try {
     response = await fetch(`${API_URL}${path}`, { ...init, headers });
   } catch (error) {
@@ -21,7 +36,21 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   if (!response.ok) { let body: unknown; try { body = await response.json(); } catch { body = undefined; } throw new ApiError(errorMessage(body), response.status, body); }
   if (response.status === 204) return undefined as T;
-  return response.json();
+  const value = await response.json() as T;
+  if (method === "GET") cache.set(cacheKey, { expiresAt: Date.now() + GET_CACHE_TTL, value });
+  return value;
+  };
+  if (method !== "GET") {
+    const result = await fetchRequest();
+    invalidateCache();
+    return result;
+  }
+  const pending = fetchRequest();
+  inFlight.set(cacheKey, pending);
+  try { return await pending; } finally { inFlight.delete(cacheKey); }
+}
+function invalidateCache(prefix?: string) {
+  Array.from(cache.keys()).forEach((key) => { if (!prefix || key.includes(`:${prefix}`)) cache.delete(key); });
 }
 function query(params?: Record<string, string | number | undefined>) {
   if (!params) return "";
@@ -62,11 +91,11 @@ export const api = {
   createSale: (input: { sale_type: SaleType; customer_name: string; warehouse_id: string; line_items: { piece_id: string; sale_price: string }[]; notes?: string }) => request<SaleDetail>("/sales/", { method: "POST", body: JSON.stringify(input) }),
   recordPayment: (id: string, input: { amount: string; method: PaymentMethod; reference?: string }) => request<Payment>(`/sales/${id}/payments`, { method: "POST", body: JSON.stringify(input) }),
   cancelSale: (id: string) => request<SaleDetail>(`/sales/${id}/cancel`, { method: "POST" }),
-  getRevenueReport: (params?: { from?: string; to?: string; granularity?: string; channel?: string; warehouse_id?: string }) => request<RevenueReport>(`/reports/revenue${query(params)}`),
+  getRevenueReport: (params?: { from?: string; to?: string; granularity?: "day" | "week" | "month" | "year"; channel?: string; warehouse_id?: string }) => request<RevenueReport>(`/reports/revenue${query(params)}`),
   getProfitByCoil: (params?: { from?: string; to?: string }) => request<ProfitByCoil[]>(`/reports/profit-by-coil${query(params)}`),
   getInventoryValuation: () => request<InventoryValuation>("/reports/inventory-valuation"),
   getPriceHistory: (id: string) => request<PriceHistory[]>(`/pieces/${id}/price-history`),
-  bulkPriceUpdate: (input: { filter: { grade?: string; category?: string; warehouse_id?: string }; adjustment: { type: "percent" | "absolute"; value: string }; reason?: string }) => request<{ affected_count: number; pieces: Piece[]; skipped_count: number }>("/pieces/bulk-price-update", { method: "POST", body: JSON.stringify(input) }),
+  bulkPriceUpdate: (input: { filter: { grade?: string; category?: string; thickness_mm?: string; warehouse_id?: string }; adjustment: { type: "set" | "percent" | "absolute"; value: string }; reason?: string }) => request<{ affected_count: number; pieces: Piece[]; skipped_count: number }>("/pieces/bulk-price-update", { method: "POST", body: JSON.stringify(input) }),
   listUsers: () => request<User[]>("/users/"),
   createUser: (input: AdminUserInput) => request<User>("/users/", { method: "POST", body: JSON.stringify(input) }),
   updateUser: (id: string, input: { full_name?: string; role?: Role }) => request<User>(`/users/${id}`, { method: "PATCH", body: JSON.stringify(input) }),

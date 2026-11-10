@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from decimal import ROUND_HALF_UP
 import re
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from typing import Annotated
 from app.api.deps import get_current_user
@@ -15,11 +15,11 @@ from app.api.deps import DbSession, require_roles
 router = APIRouter()
 
 @router.get("/", response_model=list[ProductionRunRead])
-def list_production_runs(db: DbSession, status: ProductionRunStatus | None = None, coil_id=None, _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION))] = None):
+def list_production_runs(db: DbSession, status: ProductionRunStatus | None = None, coil_id=None, limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0), _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION))] = None):
     query = select(ProductionRun).order_by(ProductionRun.started_at.desc())
     if status: query = query.where(ProductionRun.status == status)
     if coil_id: query = query.where(ProductionRun.coil_id == coil_id)
-    return list(db.scalars(query))
+    return list(db.scalars(query.limit(limit).offset(offset)))
 
 @router.get("/{run_id}", response_model=ProductionRunDetail)
 def get_production_run(run_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION, UserRole.WAREHOUSE, UserRole.SALES, UserRole.FINANCE))]):
