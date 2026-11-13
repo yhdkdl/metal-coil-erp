@@ -12,6 +12,7 @@ class SaleRead(BaseModel):
     customer_name: str
     sale_type: SaleType
     warehouse_id: UUID
+    warehouse_name: str | None = None
     total_amount: Decimal
     status: SaleStatus
     notes: str | None
@@ -28,9 +29,21 @@ class SaleLineItemCreate(BaseModel):
     sale_price: Decimal = Field(gt=0)
 
 class SaleLineItemRead(SaleLineItemCreate):
+    piece_code: str | None = None
+    category: str | None = None
+    grade: str | None = None
+    thickness_mm: Decimal | None = None
+    width_mm: Decimal | None = None
+    length_mm: Decimal | None = None
+    weight_kg: Decimal | None = None
+
     @field_serializer("sale_price")
     def serialize_sale_price(self, value: Decimal) -> str:
         return str(value)
+
+    @field_serializer("thickness_mm", "width_mm", "length_mm", "weight_kg", check_fields=False)
+    def serialize_decimals(self, value: Decimal | None) -> str | None:
+        return str(value) if value is not None else None
 
 class SaleCreate(BaseModel):
     sale_type: SaleType

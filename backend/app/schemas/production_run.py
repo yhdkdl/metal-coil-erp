@@ -8,8 +8,10 @@ class ProductionRunRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     coil_id: UUID
+    coil_number: str | None = None
     machine_type: str
     operator_id: UUID
+    operator_name: str | None = None
     status: ProductionRunStatus
     started_at: datetime
     completed_at: datetime | None

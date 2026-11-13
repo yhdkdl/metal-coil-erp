@@ -12,32 +12,6 @@ Use this document to test the complete system from receiving imported material t
 
 The administrator can access all modules.
 
-## Before starting
-
-1. Start the backend:
-
-   ```powershell
-   cd backend
-   .\.venv\Scripts\Activate.ps1
-   uvicorn app.main:app --reload
-   ```
-
-2. Start the frontend in a second terminal:
-
-   ```powershell
-   cd frontend
-   npm run dev
-   ```
-
-3. Open the application at `http://localhost:3000`.
-
-4. If the database is empty, run the seed script:
-
-   ```powershell
-   cd backend
-   python -m app.seed
-   ```
-
 ## Complete test flow
 
 ### 1. Sign in

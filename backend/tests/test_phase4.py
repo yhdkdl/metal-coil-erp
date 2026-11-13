@@ -116,3 +116,24 @@ def test_payment_progression_and_cancel_restore(db):
     assert cancelled["status"] == SaleStatus.CANCELLED
     db.refresh(pieces[1])
     assert pieces[1].status == PieceStatus.IN_MAIN
+
+
+def test_export_sales_csv(db):
+    from app.api.v1.endpoints.sales import export_sales_csv
+    user, main, _, pieces = setup_sale_data(db)
+    pieces[0].selling_price = Decimal("25.00")
+    db.commit()
+    sale = create_sale(SaleCreate(
+        sale_type=SaleType.BULK, customer_name="Acme Steel", warehouse_id=main.id,
+        line_items=[SaleLineItemCreate(piece_id=pieces[0].id, sale_price=Decimal("25.00"))],
+        notes="Urgent delivery"
+    ), db, user)
+    response = export_sales_csv(db, customer="Acme", _=user)
+    assert response.status_code == 200
+    assert response.media_type == "text/csv"
+    csv_text = response.body.decode("utf-8")
+    assert "Sale Number,Sale Date,Customer Name" in csv_text
+    assert "Acme Steel" in csv_text
+    assert "Urgent delivery" in csv_text
+    assert "SALE-" in csv_text
+    assert "25.00" in csv_text

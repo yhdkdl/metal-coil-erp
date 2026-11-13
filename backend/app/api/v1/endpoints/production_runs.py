@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from decimal import ROUND_HALF_UP
 import re
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from typing import Annotated
@@ -15,11 +16,40 @@ from app.api.deps import DbSession, require_roles
 router = APIRouter()
 
 @router.get("/", response_model=list[ProductionRunRead])
-def list_production_runs(db: DbSession, status: ProductionRunStatus | None = None, coil_id=None, limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0), _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION))] = None):
-    query = select(ProductionRun).order_by(ProductionRun.started_at.desc())
-    if status: query = query.where(ProductionRun.status == status)
-    if coil_id: query = query.where(ProductionRun.coil_id == coil_id)
-    return list(db.scalars(query.limit(limit).offset(offset)))
+def list_production_runs(
+    db: DbSession,
+    status: ProductionRunStatus | None = None,
+    coil_id: UUID | None = None,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION, UserRole.WAREHOUSE, UserRole.SALES, UserRole.FINANCE))] = None,
+):
+    query = select(ProductionRun, Coil.coil_number, User.full_name).outerjoin(
+        Coil, Coil.id == ProductionRun.coil_id
+    ).outerjoin(
+        User, User.id == ProductionRun.operator_id
+    ).order_by(ProductionRun.started_at.desc())
+    if status:
+        query = query.where(ProductionRun.status == status)
+    if coil_id:
+        query = query.where(ProductionRun.coil_id == coil_id)
+
+    results = []
+    for run, coil_num, op_name in db.execute(query.limit(limit).offset(offset)):
+        run_dict = {
+            "id": run.id,
+            "coil_id": run.coil_id,
+            "machine_type": run.machine_type,
+            "operator_id": run.operator_id,
+            "status": run.status,
+            "started_at": run.started_at,
+            "completed_at": run.completed_at,
+            "coil_number": coil_num,
+            "operator_name": op_name,
+        }
+        results.append(ProductionRunRead.model_validate(run_dict))
+    return results
+
 
 @router.get("/{run_id}", response_model=ProductionRunDetail)
 def get_production_run(run_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION, UserRole.WAREHOUSE, UserRole.SALES, UserRole.FINANCE))]):
@@ -27,8 +57,16 @@ def get_production_run(run_id, db: DbSession, _: Annotated[User, Depends(require
     if not run:
         raise HTTPException(404, "Production run not found")
     outputs = list(db.scalars(select(ProductionRunOutput).where(ProductionRunOutput.production_run_id == run.id).order_by(ProductionRunOutput.created_at)))
-    return {**ProductionRunRead.model_validate(run).model_dump(), "outputs": outputs,
-            "total_output_weight_kg": sum((o.weight_kg for o in outputs), Decimal("0"))}
+    coil = db.get(Coil, run.coil_id)
+    operator = db.get(User, run.operator_id)
+    run_dict = {
+        **ProductionRunRead.model_validate(run).model_dump(),
+        "coil_number": coil.coil_number if coil else None,
+        "operator_name": operator.full_name if operator else None,
+        "outputs": outputs,
+        "total_output_weight_kg": sum((o.weight_kg for o in outputs), Decimal("0")),
+    }
+    return run_dict
 
 @router.patch("/{run_id}", response_model=ProductionRunRead)
 def update_production_run(run_id, payload: ProductionRunUpdate, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.PRODUCTION))]):

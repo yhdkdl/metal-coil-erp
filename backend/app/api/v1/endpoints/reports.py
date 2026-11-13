@@ -20,8 +20,10 @@ MONEY_ZERO = Decimal("0.00")
 
 
 def _range(from_date: date | None, to_date: date | None) -> tuple[datetime, datetime]:
-    start = datetime.combine(from_date or date.today().replace(day=1), time.min, tzinfo=timezone.utc)
-    end_date = to_date or date.today()
+    f_date = from_date if isinstance(from_date, (date, datetime)) else None
+    t_date = to_date if isinstance(to_date, (date, datetime)) else None
+    start = datetime.combine(f_date or date.today().replace(day=1), time.min, tzinfo=timezone.utc)
+    end_date = t_date or date.today()
     return start, datetime.combine(end_date, time.max, tzinfo=timezone.utc)
 
 
@@ -60,24 +62,33 @@ def revenue_report(
     _: Annotated[User, Depends(require_roles(UserRole.FINANCE))] = None,
 ):
     start, end = _range(from_date, to_date)
-    query = select(Sale, SaleLineItem, ProducedPiece).join(SaleLineItem, SaleLineItem.sale_id == Sale.id).join(ProducedPiece, ProducedPiece.id == SaleLineItem.piece_id).where(
+    query = select(
+        Sale.id,
+        Sale.created_at,
+        SaleLineItem.sale_price,
+        ProducedPiece.allocated_cost,
+    ).join(
+        SaleLineItem, SaleLineItem.sale_id == Sale.id
+    ).join(
+        ProducedPiece, ProducedPiece.id == SaleLineItem.piece_id
+    ).where(
         Sale.created_at >= start, Sale.created_at <= end, Sale.status.in_([SaleStatus.COMPLETED, SaleStatus.PARTIAL, SaleStatus.PAID])
     )
     if channel != "both":
         query = query.where(Sale.sale_type == SaleType(channel))
     if warehouse_id:
         query = query.where(Sale.warehouse_id == warehouse_id)
-    if category:
+    if isinstance(category, str) and category:
         query = query.where(ProducedPiece.category == category)
-    if customer:
+    if isinstance(customer, str) and customer:
         query = query.where(Sale.customer_name.ilike(f"%{customer}%"))
     buckets: dict[datetime, dict[str, Decimal | int]] = {}
-    for sale, item, piece in db.execute(query):
-        bucket = _period_start(sale.created_at, granularity)
+    for sale_id, created_at, sale_price, allocated_cost in db.execute(query):
+        bucket = _period_start(created_at, granularity)
         row = buckets.setdefault(bucket, {"revenue": MONEY_ZERO, "cogs": MONEY_ZERO, "sale_ids": set()})
-        row["revenue"] += item.sale_price
-        row["cogs"] += piece.allocated_cost
-        row["sale_ids"].add(sale.id)
+        row["revenue"] += sale_price
+        row["cogs"] += allocated_cost
+        row["sale_ids"].add(sale_id)
     periods = []
     cursor = _period_start(start, granularity)
     last = _period_start(end, granularity)
@@ -103,34 +114,52 @@ def profit_by_coil(
 ):
     start, end = _range(from_date, to_date)
     coils = list(db.scalars(select(Coil).order_by(Coil.coil_number)))
-    pieces_query = select(ProducedPiece)
-    if category:
+    pieces_query = select(
+        ProducedPiece.id,
+        ProducedPiece.parent_coil_id,
+        ProducedPiece.allocated_cost,
+        ProducedPiece.status,
+    )
+    if isinstance(category, str) and category:
         pieces_query = pieces_query.where(ProducedPiece.category == category)
-    all_pieces = list(db.scalars(pieces_query))
-    pieces_by_coil: dict[UUID, list[ProducedPiece]] = {}
-    for piece in all_pieces:
-        pieces_by_coil.setdefault(piece.parent_coil_id, []).append(piece)
-    sold_piece_ids = [piece.id for piece in all_pieces if piece.status == PieceStatus.SOLD]
-    sold_query = select(SaleLineItem, Sale).join(Sale, Sale.id == SaleLineItem.sale_id).where(
-        SaleLineItem.piece_id.in_(sold_piece_ids),
-        Sale.created_at >= start,
-        Sale.created_at <= end,
-        Sale.status.in_([SaleStatus.COMPLETED, SaleStatus.PARTIAL, SaleStatus.PAID]),
-    ) if sold_piece_ids else None
-    if sold_query is not None and customer:
-        sold_query = sold_query.where(Sale.customer_name.ilike(f"%{customer}%"))
-    sold_items = list(db.execute(sold_query)) if sold_query is not None else []
-    items_by_piece: dict[UUID, list[SaleLineItem]] = {}
-    for item, _sale in sold_items:
-        items_by_piece.setdefault(item.piece_id, []).append(item)
+    
+    pieces_by_coil: dict[UUID, list[tuple[UUID, Decimal, PieceStatus]]] = {}
+    sold_piece_ids: list[UUID] = []
+    for piece_id, parent_coil_id, allocated_cost, status in db.execute(pieces_query):
+        pieces_by_coil.setdefault(parent_coil_id, []).append((piece_id, allocated_cost, status))
+        if status == PieceStatus.SOLD:
+            sold_piece_ids.append(piece_id)
+
+    items_by_piece: dict[UUID, list[Decimal]] = {}
+    if sold_piece_ids:
+        sold_query = select(SaleLineItem.piece_id, SaleLineItem.sale_price).join(
+            Sale, Sale.id == SaleLineItem.sale_id
+        ).where(
+            SaleLineItem.piece_id.in_(sold_piece_ids),
+            Sale.created_at >= start,
+            Sale.created_at <= end,
+            Sale.status.in_([SaleStatus.COMPLETED, SaleStatus.PARTIAL, SaleStatus.PAID]),
+        )
+        if isinstance(customer, str) and customer:
+            sold_query = sold_query.where(Sale.customer_name.ilike(f"%{customer}%"))
+        for piece_id, sale_price in db.execute(sold_query):
+            items_by_piece.setdefault(piece_id, []).append(sale_price)
+
     rows = []
     for coil in coils:
         pieces = pieces_by_coil.get(coil.id, [])
-        sold = [piece for piece in pieces if piece.status == PieceStatus.SOLD and piece.id in items_by_piece]
-        coil_items = [item for piece in sold for item in items_by_piece.get(piece.id, [])]
-        revenue = sum((item.sale_price for item in coil_items), MONEY_ZERO)
-        cogs = sum((piece.allocated_cost for piece in sold if piece.id in items_by_piece), MONEY_ZERO)
-        rows.append(ProfitByCoilRow(coil_number=coil.coil_number, coil_cost=coil.total_cost, pieces_sold_count=len(sold), pieces_unsold_count=len(pieces) - len(sold), revenue=revenue, cogs=cogs, gross_profit=revenue - cogs))
+        sold = [p for p in pieces if p[2] == PieceStatus.SOLD and p[0] in items_by_piece]
+        revenue = sum((price for p in sold for price in items_by_piece.get(p[0], [])), MONEY_ZERO)
+        cogs = sum((p[1] for p in sold), MONEY_ZERO)
+        rows.append(ProfitByCoilRow(
+            coil_number=coil.coil_number,
+            coil_cost=coil.total_cost,
+            pieces_sold_count=len(sold),
+            pieces_unsold_count=len(pieces) - len(sold),
+            revenue=revenue,
+            cogs=cogs,
+            gross_profit=revenue - cogs
+        ))
     return rows
 
 
@@ -145,7 +174,14 @@ def sales_breakdown(
     _: Annotated[User, Depends(require_roles(UserRole.FINANCE))] = None,
 ):
     start, end = _range(from_date, to_date)
-    query = select(Sale, SaleLineItem, ProducedPiece).join(
+    query = select(
+        ProducedPiece.category,
+        ProducedPiece.thickness_mm,
+        Sale.customer_name,
+        Sale.sale_type,
+        SaleLineItem.sale_price,
+        ProducedPiece.allocated_cost,
+    ).join(
         SaleLineItem, SaleLineItem.sale_id == Sale.id
     ).join(
         ProducedPiece, ProducedPiece.id == SaleLineItem.piece_id
@@ -154,20 +190,21 @@ def sales_breakdown(
         Sale.created_at <= end,
         Sale.status.in_([SaleStatus.COMPLETED, SaleStatus.PARTIAL, SaleStatus.PAID]),
     )
-    if category:
+    if isinstance(category, str) and category:
         query = query.where(ProducedPiece.category == category)
-    if customer:
+    if isinstance(customer, str) and customer:
         query = query.where(Sale.customer_name.ilike(f"%{customer}%"))
     if channel:
         query = query.where(Sale.sale_type == channel)
 
     grouped: dict[tuple[str, Decimal, str, str], dict[str, Decimal | int]] = {}
-    for sale, item, piece in db.execute(query):
-        key = (piece.category, piece.thickness_mm, sale.customer_name, sale.sale_type.value)
+    for cat, thickness, cust, sale_type, sale_price, allocated_cost in db.execute(query):
+        type_val = sale_type.value if hasattr(sale_type, "value") else str(sale_type)
+        key = (cat, thickness, cust, type_val)
         row = grouped.setdefault(key, {"pieces_sold": 0, "revenue": MONEY_ZERO, "cogs": MONEY_ZERO})
         row["pieces_sold"] += 1
-        row["revenue"] += item.sale_price
-        row["cogs"] += piece.allocated_cost
+        row["revenue"] += sale_price
+        row["cogs"] += allocated_cost
 
     return [
         SalesBreakdownRow(

@@ -12,6 +12,7 @@ from app.models.piece import ProducedPiece
 from app.models.stock_movement import StockMovement
 from app.models.coil import Coil
 from app.models.production_run import ProductionRun
+from app.models.warehouse import Warehouse
 from app.schemas.coil import CoilRead
 from app.schemas.production_run import ProductionRunRead
 from app.schemas.stock_movement import StockMovementRead
@@ -19,14 +20,20 @@ from app.schemas.stock_movement import StockMovementRead
 router = APIRouter()
 @router.get("/", response_model=list[PieceRead])
 def list_pieces(db: DbSession, status=None, coil_id=None, warehouse_id=None, q=None, category=None, thickness_mm=None, limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0), _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))] = None):
-    query = select(ProducedPiece).order_by(ProducedPiece.created_at.desc())
+    query = select(ProducedPiece, Warehouse.name).outerjoin(Warehouse, Warehouse.id == ProducedPiece.current_warehouse_id).order_by(ProducedPiece.created_at.desc())
     if status: query = query.where(ProducedPiece.status == status)
     if coil_id: query = query.where(ProducedPiece.parent_coil_id == coil_id)
     if warehouse_id: query = query.where(ProducedPiece.current_warehouse_id == warehouse_id)
     if q: query = query.where(ProducedPiece.piece_code.ilike(f"%{q}%"))
     if category: query = query.where(ProducedPiece.category == category)
     if thickness_mm is not None: query = query.where(ProducedPiece.thickness_mm == thickness_mm)
-    return list(db.scalars(query.limit(limit).offset(offset)))
+    
+    results = []
+    for piece, wh_name in db.execute(query.limit(limit).offset(offset)):
+        p_dict = PieceRead.model_validate(piece).model_dump()
+        p_dict["warehouse_name"] = wh_name
+        results.append(PieceRead.model_validate(p_dict))
+    return results
 
 @router.get("/summary", response_model=list[PieceStockSummary])
 def piece_summary(
@@ -79,8 +86,11 @@ def trace_piece(piece_id, db: DbSession, _: Annotated[User, Depends(require_role
     movements = list(db.scalars(select(StockMovement).where(StockMovement.piece_id == piece.id).order_by(StockMovement.created_at)))
     run = db.get(ProductionRun, piece.production_run_id) if piece.production_run_id else None
     coil = db.get(Coil, piece.parent_coil_id)
+    wh = db.get(Warehouse, piece.current_warehouse_id)
+    piece_dict = PieceRead.model_validate(piece).model_dump()
+    piece_dict["warehouse_name"] = wh.name if wh else None
     return {
-        "piece": PieceRead.model_validate(piece),
+        "piece": PieceRead.model_validate(piece_dict),
         "parent_coil": CoilRead.model_validate(coil) if coil else None,
         "production_run": ProductionRunRead.model_validate(run) if run else None,
         "movements": [StockMovementRead.model_validate(m) for m in movements],

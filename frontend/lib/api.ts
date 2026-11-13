@@ -28,17 +28,17 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   let response: Response;
   const fetchRequest = async (): Promise<T> => {
-  try {
-    response = await fetch(`${API_URL}${path}`, { ...init, headers });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Network request failed";
-    throw new ApiError(`Unable to reach the backend at ${API_URL}. ${message}`, 0, error);
-  }
-  if (!response.ok) { let body: unknown; try { body = await response.json(); } catch { body = undefined; } throw new ApiError(errorMessage(body), response.status, body); }
-  if (response.status === 204) return undefined as T;
-  const value = await response.json() as T;
-  if (method === "GET") cache.set(cacheKey, { expiresAt: Date.now() + GET_CACHE_TTL, value });
-  return value;
+    try {
+      response = await fetch(`${API_URL}${path}`, { ...init, headers });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Network request failed";
+      throw new ApiError(`Unable to reach the backend at ${API_URL}. ${message}`, 0, error);
+    }
+    if (!response.ok) { let body: unknown; try { body = await response.json(); } catch { body = undefined; } throw new ApiError(errorMessage(body), response.status, body); }
+    if (response.status === 204) return undefined as T;
+    const value = await response.json() as T;
+    if (method === "GET") cache.set(cacheKey, { expiresAt: Date.now() + GET_CACHE_TTL, value });
+    return value;
   };
   if (method !== "GET") {
     const result = await fetchRequest();
@@ -92,6 +92,23 @@ export const api = {
   createSale: (input: { sale_type: SaleType; customer_name: string; warehouse_id: string; line_items: { piece_id: string; sale_price: string }[]; notes?: string }) => request<SaleDetail>("/sales/", { method: "POST", body: JSON.stringify(input) }),
   recordPayment: (id: string, input: { amount: string; method: PaymentMethod; reference?: string }) => request<Payment>(`/sales/${id}/payments`, { method: "POST", body: JSON.stringify(input) }),
   cancelSale: (id: string) => request<SaleDetail>(`/sales/${id}/cancel`, { method: "POST" }),
+  downloadSalesCsv: async (params?: { from?: string; to?: string; channel?: SaleType; status?: SaleStatus; customer?: string; category?: string }) => {
+    if (!API_URL) throw new ApiError("NEXT_PUBLIC_API_URL is not configured.", 0);
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+    const headers = new Headers();
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    const res = await fetch(`${API_URL}/sales/export-csv${query(params)}`, { headers });
+    if (!res.ok) throw new ApiError("Failed to export sales CSV", res.status);
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sales-detailed-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  },
   getRevenueReport: (params?: { from?: string; to?: string; granularity?: "day" | "week" | "month" | "year"; channel?: string; warehouse_id?: string; category?: string; customer?: string }) => request<RevenueReport>(`/reports/revenue${query(params)}`),
   getSalesBreakdown: (params?: { from?: string; to?: string; category?: string; customer?: string; channel?: SaleType }) => request<SalesBreakdownRow[]>(`/reports/sales-breakdown${query(params)}`),
   getProfitByCoil: (params?: { from?: string; to?: string; category?: string; customer?: string }) => request<ProfitByCoil[]>(`/reports/profit-by-coil${query(params)}`),

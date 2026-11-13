@@ -1,8 +1,10 @@
+import csv
+import io
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import func, select
 from typing import Annotated
 
@@ -26,13 +28,37 @@ def _amount_paid(db, sale_id: UUID) -> Decimal:
 
 
 def _sale_detail(db, sale: Sale) -> dict:
-    items = list(db.scalars(select(SaleLineItem).where(SaleLineItem.sale_id == sale.id).order_by(SaleLineItem.created_at)))
+    items_query = select(SaleLineItem, ProducedPiece).outerjoin(
+        ProducedPiece, ProducedPiece.id == SaleLineItem.piece_id
+    ).where(SaleLineItem.sale_id == sale.id).order_by(SaleLineItem.created_at)
+
+    line_items = []
+    for item, piece in db.execute(items_query):
+        item_dict = {
+            "piece_id": item.piece_id,
+            "sale_price": item.sale_price,
+            "piece_code": piece.piece_code if piece else None,
+            "category": piece.category if piece else None,
+            "grade": piece.grade if piece else None,
+            "thickness_mm": piece.thickness_mm if piece else None,
+            "width_mm": piece.width_mm if piece else None,
+            "length_mm": piece.length_mm if piece else None,
+            "weight_kg": piece.weight_kg if piece else None,
+        }
+        line_items.append(SaleLineItemRead.model_validate(item_dict))
+
+    wh = db.get(Warehouse, sale.warehouse_id)
+    warehouse_name = wh.name if wh else None
+
     payments = list(db.scalars(select(Payment).where(Payment.sale_id == sale.id).order_by(Payment.paid_at)))
     amount_paid = _money(_amount_paid(db, sale.id))
     total = _money(sale.total_amount)
+
+    sale_data = SaleRead.model_validate(sale).model_dump()
+    sale_data["warehouse_name"] = warehouse_name
     return {
-        **SaleRead.model_validate(sale).model_dump(),
-        "line_items": [SaleLineItemRead.model_validate(item) for item in items],
+        **sale_data,
+        "line_items": line_items,
         "payments": payments,
         "amount_paid": amount_paid,
         "amount_due": _money(total - amount_paid),
@@ -115,17 +141,17 @@ def list_sales(
     _: Annotated[User, Depends(require_roles(UserRole.SALES, UserRole.FINANCE))] = None,
 ):
     query = select(Sale).order_by(Sale.created_at.desc())
-    if date_from:
+    if isinstance(date_from, datetime):
         query = query.where(Sale.created_at >= date_from)
-    if date_to:
+    if isinstance(date_to, datetime):
         query = query.where(Sale.created_at <= date_to)
-    if channel:
+    if isinstance(channel, SaleType):
         query = query.where(Sale.sale_type == channel)
-    if sale_status:
+    if isinstance(sale_status, SaleStatus):
         query = query.where(Sale.status == sale_status)
-    if customer:
+    if isinstance(customer, str) and customer:
         query = query.where(Sale.customer_name.ilike(f"%{customer}%"))
-    if category:
+    if isinstance(category, str) and category:
         query = query.join(SaleLineItem, SaleLineItem.sale_id == Sale.id).join(
             ProducedPiece, ProducedPiece.id == SaleLineItem.piece_id
         ).where(ProducedPiece.category == category).distinct()
@@ -173,6 +199,123 @@ def list_payments(
     if method:
         query = query.where(Payment.method == method)
     return list(db.scalars(query))
+
+
+@router.get("/export-csv")
+def export_sales_csv(
+    db: DbSession,
+    date_from: datetime | None = Query(default=None, alias="from"),
+    date_to: datetime | None = Query(default=None, alias="to"),
+    channel: SaleType | None = None,
+    sale_status: SaleStatus | None = Query(default=None, alias="status"),
+    customer: str | None = None,
+    category: str | None = None,
+    _: Annotated[User, Depends(require_roles(UserRole.SALES, UserRole.FINANCE))] = None,
+):
+    query = select(Sale).order_by(Sale.created_at.desc())
+    if isinstance(date_from, datetime):
+        query = query.where(Sale.created_at >= date_from)
+    if isinstance(date_to, datetime):
+        query = query.where(Sale.created_at <= date_to)
+    if isinstance(channel, SaleType):
+        query = query.where(Sale.sale_type == channel)
+    if isinstance(sale_status, SaleStatus):
+        query = query.where(Sale.status == sale_status)
+    if isinstance(customer, str) and customer:
+        query = query.where(Sale.customer_name.ilike(f"%{customer}%"))
+    if isinstance(category, str) and category:
+        query = query.join(SaleLineItem, SaleLineItem.sale_id == Sale.id).join(
+            ProducedPiece, ProducedPiece.id == SaleLineItem.piece_id
+        ).where(ProducedPiece.category == category).distinct()
+
+    sales = list(db.scalars(query))
+    sale_ids = [s.id for s in sales]
+
+    warehouses = {w.id: w.name for w in db.scalars(select(Warehouse))}
+
+    items_by_sale: dict[UUID, list[tuple[SaleLineItem, ProducedPiece]]] = {}
+    if sale_ids:
+        items_query = select(SaleLineItem, ProducedPiece).join(
+            ProducedPiece, ProducedPiece.id == SaleLineItem.piece_id
+        ).where(SaleLineItem.sale_id.in_(sale_ids))
+        for item, piece in db.execute(items_query):
+            items_by_sale.setdefault(item.sale_id, []).append((item, piece))
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Sale Number",
+        "Sale Date",
+        "Customer Name",
+        "Sale Channel",
+        "Warehouse",
+        "Status",
+        "Piece Code",
+        "Category",
+        "Grade",
+        "Thickness (mm)",
+        "Width (mm)",
+        "Length (mm)",
+        "Weight (kg)",
+        "Item Price",
+        "Sale Total Amount",
+        "Notes"
+    ])
+
+    for s in sales:
+        sale_items = items_by_sale.get(s.id, [])
+        wh_name = warehouses.get(s.warehouse_id, "Unknown")
+        date_str = s.created_at.strftime("%Y-%m-%d %H:%M:%S") if s.created_at else ""
+        channel_val = s.sale_type.value if hasattr(s.sale_type, "value") else str(s.sale_type)
+        status_val = s.status.value if hasattr(s.status, "value") else str(s.status)
+
+        if sale_items:
+            for item, piece in sale_items:
+                writer.writerow([
+                    s.sale_number,
+                    date_str,
+                    s.customer_name,
+                    channel_val,
+                    wh_name,
+                    status_val,
+                    piece.piece_code,
+                    piece.category,
+                    piece.grade,
+                    str(piece.thickness_mm),
+                    str(piece.width_mm),
+                    str(piece.length_mm),
+                    str(piece.weight_kg),
+                    str(item.sale_price),
+                    str(s.total_amount),
+                    s.notes or "",
+                ])
+        else:
+            writer.writerow([
+                s.sale_number,
+                date_str,
+                s.customer_name,
+                channel_val,
+                wh_name,
+                status_val,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                str(s.total_amount),
+                s.notes or "",
+            ])
+
+    content = output.getvalue()
+    filename = f"sales-export-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M')}.csv"
+    return Response(
+        content=content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 
 @router.get("/{sale_id}", response_model=SaleDetail)

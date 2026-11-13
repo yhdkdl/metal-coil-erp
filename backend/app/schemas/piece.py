@@ -21,6 +21,7 @@ class PieceRead(BaseModel):
     selling_price: Decimal | None
     status: PieceStatus
     current_warehouse_id: UUID
+    warehouse_name: str | None = None
     created_at: datetime
     @field_serializer("thickness_mm", "width_mm", "length_mm", "weight_kg", "allocated_cost", "min_selling_price", "selling_price")
     def serialize_decimal(self, value: Decimal | None) -> str | None:
