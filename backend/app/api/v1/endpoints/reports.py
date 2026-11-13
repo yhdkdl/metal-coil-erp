@@ -11,7 +11,7 @@ from app.api.deps import DbSession, require_roles
 from app.models import Coil, Payment, PieceStatus, PriceHistory, ProducedPiece, Sale, SaleLineItem, SaleStatus, SaleType, User, UserRole, Warehouse
 from app.schemas.report import (
     BulkPriceUpdate, InventoryValuation, InventoryWarehouseValue, PriceHistoryRead,
-    ProfitByCoilRow, RevenuePeriod, RevenueReport,
+    ProfitByCoilRow, RevenuePeriod, RevenueReport, SalesBreakdownRow,
 )
 
 router = APIRouter()
@@ -55,6 +55,8 @@ def revenue_report(
     granularity: str = Query(default="day", pattern="^(day|week|month|year)$"),
     channel: str = Query(default="both", pattern="^(BULK|RETAIL|both)$"),
     warehouse_id: UUID | None = None,
+    category: str | None = None,
+    customer: str | None = None,
     _: Annotated[User, Depends(require_roles(UserRole.FINANCE))] = None,
 ):
     start, end = _range(from_date, to_date)
@@ -65,6 +67,10 @@ def revenue_report(
         query = query.where(Sale.sale_type == SaleType(channel))
     if warehouse_id:
         query = query.where(Sale.warehouse_id == warehouse_id)
+    if category:
+        query = query.where(ProducedPiece.category == category)
+    if customer:
+        query = query.where(Sale.customer_name.ilike(f"%{customer}%"))
     buckets: dict[datetime, dict[str, Decimal | int]] = {}
     for sale, item, piece in db.execute(query):
         bucket = _period_start(sale.created_at, granularity)
@@ -91,35 +97,91 @@ def profit_by_coil(
     db: DbSession,
     from_date: date | None = Query(default=None, alias="from"),
     to_date: date | None = Query(default=None, alias="to"),
+    category: str | None = None,
+    customer: str | None = None,
     _: Annotated[User, Depends(require_roles(UserRole.FINANCE))] = None,
 ):
     start, end = _range(from_date, to_date)
     coils = list(db.scalars(select(Coil).order_by(Coil.coil_number)))
-    all_pieces = list(db.scalars(select(ProducedPiece)))
+    pieces_query = select(ProducedPiece)
+    if category:
+        pieces_query = pieces_query.where(ProducedPiece.category == category)
+    all_pieces = list(db.scalars(pieces_query))
     pieces_by_coil: dict[UUID, list[ProducedPiece]] = {}
     for piece in all_pieces:
         pieces_by_coil.setdefault(piece.parent_coil_id, []).append(piece)
     sold_piece_ids = [piece.id for piece in all_pieces if piece.status == PieceStatus.SOLD]
-    sold_items = list(db.execute(
-        select(SaleLineItem, Sale).join(Sale, Sale.id == SaleLineItem.sale_id).where(
-            SaleLineItem.piece_id.in_(sold_piece_ids),
-            Sale.created_at >= start,
-            Sale.created_at <= end,
-            Sale.status.in_([SaleStatus.COMPLETED, SaleStatus.PARTIAL, SaleStatus.PAID]),
-        )
-    )) if sold_piece_ids else []
+    sold_query = select(SaleLineItem, Sale).join(Sale, Sale.id == SaleLineItem.sale_id).where(
+        SaleLineItem.piece_id.in_(sold_piece_ids),
+        Sale.created_at >= start,
+        Sale.created_at <= end,
+        Sale.status.in_([SaleStatus.COMPLETED, SaleStatus.PARTIAL, SaleStatus.PAID]),
+    ) if sold_piece_ids else None
+    if sold_query is not None and customer:
+        sold_query = sold_query.where(Sale.customer_name.ilike(f"%{customer}%"))
+    sold_items = list(db.execute(sold_query)) if sold_query is not None else []
     items_by_piece: dict[UUID, list[SaleLineItem]] = {}
     for item, _sale in sold_items:
         items_by_piece.setdefault(item.piece_id, []).append(item)
     rows = []
     for coil in coils:
         pieces = pieces_by_coil.get(coil.id, [])
-        sold = [piece for piece in pieces if piece.status == PieceStatus.SOLD]
+        sold = [piece for piece in pieces if piece.status == PieceStatus.SOLD and piece.id in items_by_piece]
         coil_items = [item for piece in sold for item in items_by_piece.get(piece.id, [])]
         revenue = sum((item.sale_price for item in coil_items), MONEY_ZERO)
         cogs = sum((piece.allocated_cost for piece in sold if piece.id in items_by_piece), MONEY_ZERO)
         rows.append(ProfitByCoilRow(coil_number=coil.coil_number, coil_cost=coil.total_cost, pieces_sold_count=len(sold), pieces_unsold_count=len(pieces) - len(sold), revenue=revenue, cogs=cogs, gross_profit=revenue - cogs))
     return rows
+
+
+@router.get("/sales-breakdown", response_model=list[SalesBreakdownRow])
+def sales_breakdown(
+    db: DbSession,
+    from_date: date | None = Query(default=None, alias="from"),
+    to_date: date | None = Query(default=None, alias="to"),
+    category: str | None = None,
+    customer: str | None = None,
+    channel: SaleType | None = None,
+    _: Annotated[User, Depends(require_roles(UserRole.FINANCE))] = None,
+):
+    start, end = _range(from_date, to_date)
+    query = select(Sale, SaleLineItem, ProducedPiece).join(
+        SaleLineItem, SaleLineItem.sale_id == Sale.id
+    ).join(
+        ProducedPiece, ProducedPiece.id == SaleLineItem.piece_id
+    ).where(
+        Sale.created_at >= start,
+        Sale.created_at <= end,
+        Sale.status.in_([SaleStatus.COMPLETED, SaleStatus.PARTIAL, SaleStatus.PAID]),
+    )
+    if category:
+        query = query.where(ProducedPiece.category == category)
+    if customer:
+        query = query.where(Sale.customer_name.ilike(f"%{customer}%"))
+    if channel:
+        query = query.where(Sale.sale_type == channel)
+
+    grouped: dict[tuple[str, Decimal, str, str], dict[str, Decimal | int]] = {}
+    for sale, item, piece in db.execute(query):
+        key = (piece.category, piece.thickness_mm, sale.customer_name, sale.sale_type.value)
+        row = grouped.setdefault(key, {"pieces_sold": 0, "revenue": MONEY_ZERO, "cogs": MONEY_ZERO})
+        row["pieces_sold"] += 1
+        row["revenue"] += item.sale_price
+        row["cogs"] += piece.allocated_cost
+
+    return [
+        SalesBreakdownRow(
+            category=category_value,
+            thickness_mm=thickness,
+            customer=customer_value,
+            sale_type=sale_type,
+            pieces_sold=int(values["pieces_sold"]),
+            revenue=Decimal(values["revenue"]).quantize(Decimal("0.01")),
+            cogs=Decimal(values["cogs"]).quantize(Decimal("0.01")),
+            gross_profit=Decimal(values["revenue"] - values["cogs"]).quantize(Decimal("0.01")),
+        )
+        for (category_value, thickness, customer_value, sale_type), values in sorted(grouped.items())
+    ]
 
 
 @router.get("/inventory-valuation", response_model=InventoryValuation)

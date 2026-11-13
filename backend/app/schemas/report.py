@@ -23,6 +23,21 @@ class RevenueReport(BaseModel):
     totals: dict[str, str]
 
 
+class SalesBreakdownRow(BaseModel):
+    category: str
+    thickness_mm: Decimal
+    customer: str
+    sale_type: str
+    pieces_sold: int
+    revenue: Decimal
+    cogs: Decimal
+    gross_profit: Decimal
+
+    @field_serializer("thickness_mm", "revenue", "cogs", "gross_profit")
+    def serialize_breakdown_value(self, value: Decimal) -> str:
+        return str(value)
+
+
 class ProfitByCoilRow(BaseModel):
     coil_number: str
     coil_cost: Decimal

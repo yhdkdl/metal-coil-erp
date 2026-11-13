@@ -37,3 +37,17 @@ class PieceCreate(BaseModel):
     allocated_cost: Decimal
     selling_price: Decimal | None = None
     current_warehouse_id: UUID
+
+
+class PieceStockSummary(BaseModel):
+    category: str
+    thickness_mm: Decimal
+    total_pieces: int
+    in_stock_pieces: int
+    in_main: int
+    in_outlet: int
+    sold: int
+
+    @field_serializer("thickness_mm")
+    def serialize_thickness(self, value: Decimal) -> str:
+        return str(value)

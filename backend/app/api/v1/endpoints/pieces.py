@@ -1,11 +1,12 @@
+from datetime import date, datetime, time, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import case, func, select
 from app.api.deps import DbSession, require_roles
 from app.api.deps import get_current_user
 from fastapi import Depends
 from typing import Annotated
 from app.models.user import User, UserRole
-from app.schemas.piece import PieceRead
+from app.schemas.piece import PieceRead, PieceStockSummary
 from app.schemas.report import PriceUpdate
 from app.models.piece import ProducedPiece
 from app.models.stock_movement import StockMovement
@@ -17,14 +18,51 @@ from app.schemas.stock_movement import StockMovementRead
 
 router = APIRouter()
 @router.get("/", response_model=list[PieceRead])
-def list_pieces(db: DbSession, status=None, coil_id=None, warehouse_id=None, q=None, category=None, limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0), _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))] = None):
+def list_pieces(db: DbSession, status=None, coil_id=None, warehouse_id=None, q=None, category=None, thickness_mm=None, limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0), _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))] = None):
     query = select(ProducedPiece).order_by(ProducedPiece.created_at.desc())
     if status: query = query.where(ProducedPiece.status == status)
     if coil_id: query = query.where(ProducedPiece.parent_coil_id == coil_id)
     if warehouse_id: query = query.where(ProducedPiece.current_warehouse_id == warehouse_id)
     if q: query = query.where(ProducedPiece.piece_code.ilike(f"%{q}%"))
     if category: query = query.where(ProducedPiece.category == category)
+    if thickness_mm is not None: query = query.where(ProducedPiece.thickness_mm == thickness_mm)
     return list(db.scalars(query.limit(limit).offset(offset)))
+
+@router.get("/summary", response_model=list[PieceStockSummary])
+def piece_summary(
+    db: DbSession,
+    category: str | None = None,
+    thickness_mm=None,
+    produced_on: date | None = None,
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN, UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))] = None,
+):
+    query = select(
+        ProducedPiece.category,
+        ProducedPiece.thickness_mm,
+        func.count(ProducedPiece.id),
+        func.count(case((ProducedPiece.status != "SOLD", ProducedPiece.id))),
+        func.count(case((ProducedPiece.status == "IN_MAIN", ProducedPiece.id))),
+        func.count(case((ProducedPiece.status == "IN_OUTLET", ProducedPiece.id))),
+        func.count(case((ProducedPiece.status == "SOLD", ProducedPiece.id))),
+    ).group_by(ProducedPiece.category, ProducedPiece.thickness_mm).order_by(ProducedPiece.category, ProducedPiece.thickness_mm)
+    if category: query = query.where(ProducedPiece.category == category)
+    if thickness_mm is not None: query = query.where(ProducedPiece.thickness_mm == thickness_mm)
+    if produced_on:
+        start = datetime.combine(produced_on, time.min, tzinfo=timezone.utc)
+        end = start + timedelta(days=1)
+        query = query.where(ProducedPiece.created_at >= start, ProducedPiece.created_at < end)
+    return [
+        PieceStockSummary(
+            category=category_value,
+            thickness_mm=thickness_value,
+            total_pieces=total,
+            in_stock_pieces=in_stock,
+            in_main=in_main,
+            in_outlet=in_outlet,
+            sold=sold,
+        )
+        for category_value, thickness_value, total, in_stock, in_main, in_outlet, sold in db.execute(query)
+    ]
 
 @router.get("/{piece_id}", response_model=PieceRead)
 def get_piece(piece_id, db: DbSession, _: Annotated[User, Depends(require_roles(UserRole.WAREHOUSE, UserRole.PRODUCTION, UserRole.SALES, UserRole.FINANCE))]):

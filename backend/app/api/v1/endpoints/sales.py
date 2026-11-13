@@ -11,6 +11,7 @@ from app.models import (
     MovementType, Payment, PieceStatus, ProducedPiece, Sale, SaleLineItem,
     SaleStatus, SaleType, StockMovement, User, UserRole, Warehouse, WarehouseType,
 )
+from app.models.piece import ProducedPiece
 from app.schemas.sale import PaymentCreate, PaymentRead, SaleCreate, SaleDetail, SaleLineItemCreate, SaleLineItemRead, SaleRead
 
 router = APIRouter()
@@ -108,6 +109,7 @@ def list_sales(
     channel: SaleType | None = None,
     sale_status: SaleStatus | None = Query(default=None, alias="status"),
     customer: str | None = None,
+    category: str | None = None,
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     _: Annotated[User, Depends(require_roles(UserRole.SALES, UserRole.FINANCE))] = None,
@@ -123,6 +125,10 @@ def list_sales(
         query = query.where(Sale.status == sale_status)
     if customer:
         query = query.where(Sale.customer_name.ilike(f"%{customer}%"))
+    if category:
+        query = query.join(SaleLineItem, SaleLineItem.sale_id == Sale.id).join(
+            ProducedPiece, ProducedPiece.id == SaleLineItem.piece_id
+        ).where(ProducedPiece.category == category).distinct()
     return list(db.scalars(query.limit(limit).offset(offset)))
 
 

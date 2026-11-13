@@ -1,4 +1,4 @@
-import { AdminUserInput, AuthResponse, Coil, CoilDetail, CoilInput, InventoryValuation, Payment, PaymentMethod, Piece, PieceTrace, PriceHistory, ProfitByCoil, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, RevenueReport, Role, Sale, SaleDetail, SaleStatus, SaleType, StockTransfer, StockTransferResult, User, Warehouse } from "@/types";
+import { AdminUserInput, AuthResponse, Coil, CoilDetail, CoilInput, InventoryValuation, Payment, PaymentMethod, Piece, PieceStockSummary, PieceTrace, PriceHistory, ProfitByCoil, ProductionOutput, ProductionOutputInput, ProductionRun, ProductionRunDetail, ProductionRunInput, RevenueReport, Role, Sale, SaleDetail, SaleStatus, SaleType, SalesBreakdownRow, StockTransfer, StockTransferResult, User, Warehouse } from "@/types";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const GET_CACHE_TTL = 15_000;
 const cache = new Map<string, { expiresAt: number; value: unknown }>();
@@ -70,7 +70,8 @@ export const api = {
   getCoil: (id: string) => request<CoilDetail>(`/coils/${id}`),
   getCoilDetail: (id: string) => request<CoilDetail>(`/coils/${id}`),
   createCoil: (input: CoilInput) => request<Coil>("/coils/", { method: "POST", body: JSON.stringify(input) }),
-  listPieces: (params?: { status?: string; coil_id?: string; warehouse_id?: string; category?: string; q?: string }) => request<Piece[]>(`/pieces/${query(params)}`),
+  listPieces: (params?: { status?: string; coil_id?: string; warehouse_id?: string; category?: string; thickness_mm?: string; q?: string }) => request<Piece[]>(`/pieces/${query(params)}`),
+  getPieceSummary: (params?: { category?: string; thickness_mm?: string; produced_on?: string }) => request<PieceStockSummary[]>(`/pieces/summary${query(params)}`),
   getPiece: (id: string) => request<Piece>(`/pieces/${id}`),
   listProductionRuns: (params?: { status?: string; coil_id?: string; skip?: number; limit?: number }) => request<ProductionRun[]>(`/production-runs/${query(params)}`),
   getProductionRun: (id: string) => request<ProductionRunDetail>(`/production-runs/${id}`),
@@ -86,13 +87,14 @@ export const api = {
   listWarehouses: () => request<Warehouse[]>("/warehouses/"),
   listStockTransfers: (params?: { from?: string; to?: string; warehouse_id?: string }) => request<StockTransfer[]>(`/stock-transfers/${query(params)}`),
   createStockTransfer: (input: { piece_ids: string[]; to_warehouse_id: string; note?: string }) => request<StockTransferResult>("/stock-transfers/", { method: "POST", body: JSON.stringify(input) }),
-  listSales: (params?: { from?: string; to?: string; channel?: SaleType; status?: SaleStatus; customer?: string }) => request<Sale[]>(`/sales/${query(params)}`),
+  listSales: (params?: { from?: string; to?: string; channel?: SaleType; status?: SaleStatus; customer?: string; category?: string }) => request<Sale[]>(`/sales/${query(params)}`),
   getSale: (id: string) => request<SaleDetail>(`/sales/${id}`),
   createSale: (input: { sale_type: SaleType; customer_name: string; warehouse_id: string; line_items: { piece_id: string; sale_price: string }[]; notes?: string }) => request<SaleDetail>("/sales/", { method: "POST", body: JSON.stringify(input) }),
   recordPayment: (id: string, input: { amount: string; method: PaymentMethod; reference?: string }) => request<Payment>(`/sales/${id}/payments`, { method: "POST", body: JSON.stringify(input) }),
   cancelSale: (id: string) => request<SaleDetail>(`/sales/${id}/cancel`, { method: "POST" }),
-  getRevenueReport: (params?: { from?: string; to?: string; granularity?: "day" | "week" | "month" | "year"; channel?: string; warehouse_id?: string }) => request<RevenueReport>(`/reports/revenue${query(params)}`),
-  getProfitByCoil: (params?: { from?: string; to?: string }) => request<ProfitByCoil[]>(`/reports/profit-by-coil${query(params)}`),
+  getRevenueReport: (params?: { from?: string; to?: string; granularity?: "day" | "week" | "month" | "year"; channel?: string; warehouse_id?: string; category?: string; customer?: string }) => request<RevenueReport>(`/reports/revenue${query(params)}`),
+  getSalesBreakdown: (params?: { from?: string; to?: string; category?: string; customer?: string; channel?: SaleType }) => request<SalesBreakdownRow[]>(`/reports/sales-breakdown${query(params)}`),
+  getProfitByCoil: (params?: { from?: string; to?: string; category?: string; customer?: string }) => request<ProfitByCoil[]>(`/reports/profit-by-coil${query(params)}`),
   getInventoryValuation: () => request<InventoryValuation>("/reports/inventory-valuation"),
   getPriceHistory: (id: string) => request<PriceHistory[]>(`/pieces/${id}/price-history`),
   bulkPriceUpdate: (input: { filter: { grade?: string; category?: string; thickness_mm?: string; warehouse_id?: string }; adjustment: { type: "set" | "percent" | "absolute"; value: string }; reason?: string }) => request<{ affected_count: number; pieces: Piece[]; skipped_count: number }>("/pieces/bulk-price-update", { method: "POST", body: JSON.stringify(input) }),
