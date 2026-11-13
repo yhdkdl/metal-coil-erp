@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import {
   ArrowUpRight,
   Factory,
@@ -140,7 +141,7 @@ export default function DashboardPage() {
       <Sidebar mobileOpen={menuOpen} onClose={() => setMenuOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Header onMenu={() => setMenuOpen(true)} />
-        <main className="flex-1 p-4 sm:p-6 md:p-8 space-y-8">
+        <main className="flex-1 p-3.5 sm:p-6 md:p-8 pb-24 lg:pb-8 space-y-6 sm:space-y-8">
           <div className="mx-auto max-w-7xl space-y-8">
             {/* Hero / Control Center Header */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#121c29] via-[#1a2738] to-[#142030] p-6 text-white shadow-xl md:p-10 border border-slate-800">
@@ -532,6 +533,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </main>
+        <BottomNav onOpenMenu={() => setMenuOpen(true)} />
       </div>
     </div>
   );

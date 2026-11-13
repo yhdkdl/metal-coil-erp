@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#101923" />
+      <stop offset="100%" stop-color="#0a0f16" />
+    </linearGradient>
+    <linearGradient id="amber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="metallic" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+
+  <!-- Amber Industrial Emblem Badge -->
+  <rect x="64" y="64" width="384" height="384" rx="88" fill="url(#amber)" />
+  <rect x="64" y="64" width="384" height="384" rx="88" fill="url(#metallic)" />
+
+  <!-- Concentric Metal Coil Rings -->
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#101923" stroke-width="8" stroke-opacity="0.25" stroke-dasharray="14 8" />
+  <circle cx="256" cy="256" r="120" fill="none" stroke="#101923" stroke-width="10" stroke-opacity="0.3" stroke-dasharray="24 10" />
+  <circle cx="256" cy="256" r="90" fill="none" stroke="#101923" stroke-width="12" stroke-opacity="0.35" />
+
+  <!-- Inner Arbor Core -->
+  <circle cx="256" cy="256" r="64" fill="#101923" />
+  <circle cx="256" cy="256" r="64" fill="none" stroke="#FBBF24" stroke-width="6" />
+
+  <!-- Modern MC Monogram -->
+  <text x="256" y="278" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="54" font-weight="900" fill="#FBBF24" text-anchor="middle" letter-spacing="2">MC</text>
+</svg>
+

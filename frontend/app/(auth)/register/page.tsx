@@ -33,6 +33,7 @@ export default function RegisterPage() {
 
   return (
     <main className="grid min-h-screen lg:grid-cols-[1.1fr_.9fr]">
+      {/* Desktop Brand Banner */}
       <div className="relative hidden overflow-hidden bg-[#101923] p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="relative z-10 flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-amber-400 font-black text-slate-950">
@@ -59,16 +60,28 @@ export default function RegisterPage() {
         <div className="absolute -bottom-24 -right-20 h-96 w-96 rounded-full border-[42px] border-white/[.04]" />
       </div>
 
-      <div className="flex items-center justify-center bg-slate-50 p-6">
+      {/* Form Container */}
+      <div className="flex items-center justify-center bg-slate-50 p-4 sm:p-6 md:p-8">
         <form onSubmit={submit} className="w-full max-w-md space-y-6">
+          {/* Mobile Logo Brand */}
+          <div className="flex items-center gap-2.5 lg:hidden">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-amber-400 font-black text-slate-950 shadow-sm">
+              MC
+            </div>
+            <div>
+              <div className="text-base font-bold text-slate-900">Metal Coil ERP</div>
+              <div className="text-xs text-slate-500">Mobile Operations Portal</div>
+            </div>
+          </div>
+
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[.2em] text-amber-600">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[.2em] text-amber-600">
               Staff Provisioning
             </p>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
               Create an account
             </h1>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-1 text-xs sm:text-sm text-slate-500">
               Register your operational profile to access your workspace.
             </p>
           </div>
@@ -119,7 +132,7 @@ export default function RegisterPage() {
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+            <p className="rounded-lg bg-red-50 p-3 text-xs sm:text-sm text-red-600">{error}</p>
           )}
 
           <Button
@@ -129,7 +142,7 @@ export default function RegisterPage() {
             {submitting ? "Creating profile..." : "Register Profile"}
           </Button>
 
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-xs sm:text-sm text-slate-500">
             Already have an active account?{" "}
             <Link href="/login" className="font-bold text-slate-900 hover:text-amber-700">
               Sign in

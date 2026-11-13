@@ -1,8 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-:root { --border: 214 24% 88%; --background: 210 24% 97%; --foreground: 222 35% 12%; }
-* { border-color: hsl(var(--border)); }
-body { background: hsl(var(--background)); color: hsl(var(--foreground)); font-family: Arial, Helvetica, sans-serif; }
-::selection { background: #fbbf24; color: #172033; }
-.grid-pattern { background-image: linear-gradient(rgba(148,163,184,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.08) 1px, transparent 1px); background-size: 32px 32px; }
+
+:root {
+  --border: 214 24% 88%;
+  --background: 210 24% 97%;
+  --foreground: 222 35% 12%;
+}
+
+* {
+  border-color: hsl(var(--border));
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overscroll-behavior-y: none;
+}
+
+::selection {
+  background: #fbbf24;
+  color: #172033;
+}
+
+.grid-pattern {
+  background-image: linear-gradient(rgba(148,163,184,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Smooth touch scrolling on mobile tables and card containers */
+.overflow-x-auto, .overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Prevent iOS Safari from auto-zooming into inputs when tapped */
+@media screen and (max-width: 767px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Standalone PWA safe-area support for iPhone notch and Dynamic Island */
+@supports (padding-top: env(safe-area-inset-top)) {
+  header {
+    padding-top: env(safe-area-inset-top);
+    height: calc(3.5rem + env(safe-area-inset-top));
+  }
+}
