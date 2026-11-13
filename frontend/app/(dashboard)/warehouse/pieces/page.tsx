@@ -366,19 +366,23 @@ export default function PiecesPage() {
         <EmptyState>No finished pieces matching your filter.</EmptyState>
       ) : (
         <Card className="border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="sm:hidden px-4 py-2 bg-slate-50 border-b border-slate-100 text-[11px] text-slate-500 font-medium flex items-center justify-between">
+            <span>↔ Swipe table horizontally to see all columns</span>
+            <span className="font-mono text-[10px] text-slate-400">9 columns</span>
+          </div>
+          <div className="overflow-x-auto w-full max-w-full touch-pan-x overscroll-x-contain">
+            <table className="w-full text-left text-sm min-w-[850px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="p-3 sm:p-4">Piece Code</th>
-                  <th className="p-4 hidden sm:table-cell">Category</th>
-                  <th className="p-4 hidden md:table-cell">Grade</th>
-                  <th className="p-4 hidden md:table-cell">Thickness</th>
-                  <th className="p-4 hidden lg:table-cell">Dimensions</th>
-                  <th className="p-3 sm:p-4 text-right">Weight</th>
-                  <th className="p-4 hidden sm:table-cell">Location</th>
-                  <th className="p-3 sm:p-4 text-right">Selling Price</th>
-                  <th className="p-3 sm:p-4 text-center">Status</th>
+                  <th className="p-3.5 whitespace-nowrap">Piece Code</th>
+                  <th className="p-3.5 whitespace-nowrap">Category</th>
+                  <th className="p-3.5 whitespace-nowrap">Grade</th>
+                  <th className="p-3.5 whitespace-nowrap">Thickness</th>
+                  <th className="p-3.5 whitespace-nowrap">Dimensions (W × L)</th>
+                  <th className="p-3.5 text-right whitespace-nowrap">Weight</th>
+                  <th className="p-3.5 whitespace-nowrap">Location</th>
+                  <th className="p-3.5 text-right whitespace-nowrap">Selling Price</th>
+                  <th className="p-3.5 text-center whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -387,41 +391,35 @@ export default function PiecesPage() {
                     p.warehouse_name || warehouseMap[p.current_warehouse_id] || "Warehouse";
                   return (
                     <tr key={p.id} className="transition hover:bg-slate-50/80">
-                      <td className="p-3 sm:p-4">
+                      <td className="p-3.5">
                         <Link
-                          className="font-bold text-blue-600 hover:underline block font-mono text-xs sm:text-sm"
+                          className="font-bold text-blue-600 hover:underline block font-mono text-xs whitespace-nowrap"
                           href={`/warehouse/pieces/${p.id}`}
                         >
                           {p.piece_code}
                         </Link>
-                        <div className="text-[11px] text-slate-500 sm:hidden mt-0.5">
-                          {p.category} · {p.grade} ({p.thickness_mm}mm)
-                        </div>
-                        <div className="text-[11px] text-slate-400 sm:hidden">
-                          {locationName}
-                        </div>
                       </td>
-                      <td className="p-4 font-semibold text-slate-900 hidden sm:table-cell">{p.category}</td>
-                      <td className="p-4 text-slate-700 hidden md:table-cell">{p.grade}</td>
-                      <td className="p-4 font-mono text-slate-700 hidden md:table-cell">{p.thickness_mm} mm</td>
-                      <td className="p-4 font-mono text-xs text-slate-500 hidden lg:table-cell">
+                      <td className="p-3.5 font-semibold text-slate-900 whitespace-nowrap">{p.category}</td>
+                      <td className="p-3.5 text-slate-700 whitespace-nowrap">{p.grade}</td>
+                      <td className="p-3.5 font-mono text-slate-700 whitespace-nowrap">{p.thickness_mm} mm</td>
+                      <td className="p-3.5 font-mono text-xs text-slate-500 whitespace-nowrap">
                         {p.width_mm} × {p.length_mm} mm
                       </td>
-                      <td className="p-3 sm:p-4 text-right font-mono text-xs font-medium text-slate-800">
+                      <td className="p-3.5 text-right font-mono text-xs font-medium text-slate-800 whitespace-nowrap">
                         {p.weight_kg} kg
                       </td>
-                      <td className="p-4 text-xs font-medium text-slate-700 hidden sm:table-cell items-center gap-1.5 pt-5">
+                      <td className="p-3.5 text-xs font-medium text-slate-700 whitespace-nowrap">
                         <WarehouseIcon size={14} className="text-slate-400 shrink-0 inline mr-1" />
                         <span>{locationName}</span>
                       </td>
-                      <td className="p-3 sm:p-4 text-right font-mono font-bold text-xs">
+                      <td className="p-3.5 text-right font-mono font-bold text-xs whitespace-nowrap">
                         {p.selling_price ? (
                           <span className="text-slate-900">${parseFloat(p.selling_price).toFixed(2)}</span>
                         ) : (
                           <span className="text-amber-600 font-semibold">Unpriced</span>
                         )}
                       </td>
-                      <td className="p-3 sm:p-4 text-center">
+                      <td className="p-3.5 text-center whitespace-nowrap">
                         <StatusBadge value={p.status} />
                       </td>
                     </tr>

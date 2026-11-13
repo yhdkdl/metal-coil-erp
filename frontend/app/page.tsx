@@ -341,53 +341,58 @@ export default function DashboardPage() {
                         </Link>
                       </div>
                     ) : (
-                      <div className="mt-4 overflow-x-auto">
-                        <table className="w-full min-w-[560px] text-left text-sm">
-                          <thead>
-                            <tr className="border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50">
-                              <th className="p-3">Product Name</th>
-                              <th className="p-3">Thickness</th>
-                              <th className="p-3 text-right">Produced</th>
-                              <th className="p-3 text-right">In Stock</th>
-                              <th className="p-3 text-right">Sold</th>
-                              <th className="p-3 text-right">Fulfillment Status</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100">
-                            {todaySummary.map((row) => {
-                              const availRatio = row.total_pieces > 0
-                                ? Math.round((row.in_stock_pieces / row.total_pieces) * 100)
-                                : 0;
-                              return (
-                                <tr key={`${row.category}-${row.thickness_mm}`} className="transition hover:bg-slate-50/70">
-                                  <td className="p-3 font-semibold text-slate-900">{row.category}</td>
-                                  <td className="p-3 font-mono text-slate-600">{row.thickness_mm} mm</td>
-                                  <td className="p-3 text-right font-mono font-bold text-slate-900">
-                                    {row.total_pieces}
-                                  </td>
-                                  <td className="p-3 text-right font-mono text-emerald-700 font-semibold">
-                                    {row.in_stock_pieces}
-                                  </td>
-                                  <td className="p-3 text-right font-mono text-slate-500">
-                                    {row.sold}
-                                  </td>
-                                  <td className="p-3 text-right">
-                                    <div className="inline-flex items-center justify-end gap-2">
-                                      <div className="w-16 h-2 rounded-full bg-slate-200 overflow-hidden flex">
-                                        <div
-                                          style={{ width: `${availRatio}%` }}
-                                          className="bg-emerald-500 h-full rounded-full transition-all duration-300"
-                                        />
+                      <div className="mt-4 rounded-xl border border-slate-200 overflow-hidden">
+                        <div className="sm:hidden px-3 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between font-sans">
+                          <span>👉 Swipe horizontally for all columns</span>
+                          <span className="text-slate-400 font-mono">← / →</span>
+                        </div>
+                        <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
+                          <table className="w-full min-w-[620px] text-left text-sm">
+                            <thead>
+                              <tr className="border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50 whitespace-nowrap">
+                                <th className="p-3">Product Name</th>
+                                <th className="p-3">Thickness</th>
+                                <th className="p-3 text-right">Produced</th>
+                                <th className="p-3 text-right">In Stock</th>
+                                <th className="p-3 text-right">Sold</th>
+                                <th className="p-3 text-right">Fulfillment Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {todaySummary.map((row) => {
+                                const availRatio = row.total_pieces > 0
+                                  ? Math.round((row.in_stock_pieces / row.total_pieces) * 100)
+                                  : 0;
+                                return (
+                                  <tr key={`${row.category}-${row.thickness_mm}`} className="transition hover:bg-slate-50/70 whitespace-nowrap">
+                                    <td className="p-3 font-semibold text-slate-900">{row.category}</td>
+                                    <td className="p-3 font-mono text-slate-600">{row.thickness_mm} mm</td>
+                                    <td className="p-3 text-right font-mono font-bold text-slate-900">
+                                      {row.total_pieces}
+                                    </td>
+                                    <td className="p-3 text-right font-mono text-emerald-700 font-semibold">
+                                      {row.in_stock_pieces}
+                                    </td>
+                                    <td className="p-3 text-right font-mono text-slate-500">
+                                      {row.sold}
+                                    </td>
+                                    <td className="p-3 text-right">
+                                      <div className="inline-flex items-center justify-end gap-2">
+                                        <div className="w-16 h-2 rounded-full bg-slate-200 overflow-hidden flex">
+                                          <div
+                                            style={{ width: `${availRatio}%` }}
+                                            className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+                                          />
+                                        </div>
+                                        <span className="font-mono text-xs text-slate-700">{availRatio}%</span>
                                       </div>
-                                      <span className="font-mono text-xs text-slate-700">{availRatio}%</span>
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                          <tfoot>
-                            <tr className="border-t-2 border-slate-200 bg-slate-50/80 font-semibold text-slate-900 text-xs uppercase tracking-wider">
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                            <tfoot>
+                              <tr className="border-t-2 border-slate-200 bg-slate-50/80 font-semibold text-slate-900 text-xs uppercase tracking-wider whitespace-nowrap">
                               <td colSpan={2} className="p-3">Total Produced Today</td>
                               <td className="p-3 text-right font-mono font-bold text-sm">{todayProducedTotal}</td>
                               <td className="p-3 text-right font-mono text-emerald-700 font-bold text-sm">{todayInStockTotal}</td>
@@ -397,7 +402,8 @@ export default function DashboardPage() {
                           </tfoot>
                         </table>
                       </div>
-                    )}
+                    </div>
+                  )}
                   </CardContent>
                 </Card>
               </div>

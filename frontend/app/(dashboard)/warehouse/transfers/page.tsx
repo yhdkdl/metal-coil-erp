@@ -125,58 +125,57 @@ export default function TransfersPage() {
         </EmptyState>
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="sm:hidden px-4 py-2 bg-slate-50 border-b border-slate-100 text-[11px] text-slate-500 font-medium flex items-center justify-between">
+            <span>↔ Swipe table horizontally to see all columns</span>
+            <span className="font-mono text-[10px] text-slate-400">6 columns</span>
+          </div>
+          <div className="overflow-x-auto w-full max-w-full touch-pan-x overscroll-x-contain">
+            <table className="w-full text-left text-sm min-w-[750px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="py-3 px-3 sm:px-4">Date & Time</th>
-                  <th className="py-3 px-4 hidden md:table-cell">Transfer ID</th>
-                  <th className="py-3 px-3 sm:px-4">Route</th>
-                  <th className="py-3 px-2 sm:px-4 text-right">Items</th>
-                  <th className="py-3 px-3 sm:px-4 text-right">Total Weight</th>
-                  <th className="py-3 px-4 hidden sm:table-cell">Manifest Memo</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Date & Time</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Transfer ID</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Route (Origin → Destination)</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Items</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Total Weight</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Manifest Memo</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((t) => (
                   <tr key={t.transfer_group_id} className="transition-colors hover:bg-slate-50/80">
-                    <td className="py-3 px-3 sm:px-4 text-xs text-slate-600">
+                    <td className="py-3 px-4 text-xs text-slate-600 whitespace-nowrap">
                       <div className="font-medium text-slate-900">
                         {new Date(t.created_at).toLocaleDateString()}
                       </div>
                       <div className="text-slate-400 text-[10px]">
                         {new Date(t.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </div>
-                      {t.note && (
-                        <div className="text-[10px] text-slate-500 italic sm:hidden mt-0.5 max-w-[140px] truncate">
-                          {t.note}
-                        </div>
-                      )}
                     </td>
-                    <td className="py-3 px-4 font-mono text-xs font-semibold text-slate-800 hidden md:table-cell">
+                    <td className="py-3 px-4 font-mono text-xs font-semibold text-slate-800 whitespace-nowrap">
                       {t.transfer_group_id.slice(0, 8)}…
                     </td>
-                    <td className="py-3 px-3 sm:px-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-1.5 text-xs">
-                        <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700 text-[11px] truncate max-w-[110px]">
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="rounded bg-slate-100 px-2 py-0.5 font-medium text-slate-700 text-xs">
                           {name(t.from_warehouse_id)}
                         </span>
-                        <span className="text-slate-400 text-[10px] hidden sm:inline">→</span>
-                        <span className="rounded bg-blue-50 px-1.5 py-0.5 font-medium text-blue-700 text-[11px] truncate max-w-[110px]">
+                        <span className="text-slate-400">→</span>
+                        <span className="rounded bg-blue-50 px-2 py-0.5 font-medium text-blue-700 text-xs">
                           {name(t.to_warehouse_id)}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-2 sm:px-4 text-right font-mono text-xs font-bold text-slate-900">
-                      {t.piece_count} <span className="hidden sm:inline">pcs</span>
+                    <td className="py-3 px-4 text-right font-mono text-xs font-bold text-slate-900 whitespace-nowrap">
+                      {t.piece_count} pcs
                     </td>
-                    <td className="py-3 px-3 sm:px-4 text-right font-mono text-xs font-medium text-slate-900">
+                    <td className="py-3 px-4 text-right font-mono text-xs font-medium text-slate-900 whitespace-nowrap">
                       {Number(t.total_weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
                       <div className="text-[10px] text-slate-400">
                         {(Number(t.total_weight_kg) / 1000).toFixed(2)} MT
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-xs text-slate-600 hidden sm:table-cell">
+                    <td className="py-3 px-4 text-xs text-slate-600 whitespace-nowrap">
                       {t.note ? (
                         <span className="italic">{t.note}</span>
                       ) : (

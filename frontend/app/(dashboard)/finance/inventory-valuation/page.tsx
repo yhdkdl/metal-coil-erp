@@ -133,15 +133,19 @@ export default function InventoryValuationPage() {
 
       {/* Detailed Table */}
       <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+          <span>👉 Swipe horizontally for all columns</span>
+          <span className="text-slate-400 font-mono">← / →</span>
+        </div>
+        <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
+          <table className="w-full text-left text-sm min-w-[650px]">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                 <th className="py-3 px-3 sm:px-4">Warehouse</th>
-                <th className="py-3 px-4 text-right hidden sm:table-cell">Pieces</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Pieces</th>
                 <th className="py-3 px-3 sm:px-4 text-right">Cost Basis</th>
                 <th className="py-3 px-3 sm:px-4 text-right">List Value</th>
-                <th className="py-3 px-4 text-right hidden md:table-cell">Unrealized Gain</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Unrealized Gain</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-mono text-xs">
@@ -150,14 +154,11 @@ export default function InventoryValuationPage() {
                 const list = parseFloat(row.list_value) || 0;
                 const spread = list - cost;
                 return (
-                  <tr key={row.warehouse_id} className="transition-colors hover:bg-slate-50">
+                  <tr key={row.warehouse_id} className="transition-colors hover:bg-slate-50 whitespace-nowrap">
                     <td className="py-3 px-3 sm:px-4 font-sans text-xs sm:text-sm font-semibold text-slate-900">
-                      <div>{row.warehouse_name}</div>
-                      <div className="text-[11px] font-mono text-slate-500 sm:hidden">
-                        {row.piece_count.toLocaleString()} pcs
-                      </div>
+                      {row.warehouse_name}
                     </td>
-                    <td className="py-3 px-4 text-right font-medium text-slate-800 hidden sm:table-cell">
+                    <td className="py-3 px-3 sm:px-4 text-right font-medium text-slate-800">
                       {row.piece_count.toLocaleString()} pcs
                     </td>
                     <td className="py-3 px-3 sm:px-4 text-right text-slate-700">
@@ -166,7 +167,7 @@ export default function InventoryValuationPage() {
                     <td className="py-3 px-3 sm:px-4 text-right font-semibold text-blue-600">
                       {formatCurrency(list)}
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-emerald-600 hidden md:table-cell">
+                    <td className="py-3 px-3 sm:px-4 text-right font-bold text-emerald-600">
                       {formatCurrency(spread)}
                     </td>
                   </tr>

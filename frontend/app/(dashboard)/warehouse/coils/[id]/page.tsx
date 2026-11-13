@@ -198,23 +198,27 @@ export default function CoilDetailPage() {
           <EmptyState>No cut pieces have been produced from this mother coil yet.</EmptyState>
         ) : (
           <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+            <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+              <span>👉 Swipe horizontally for all columns</span>
+              <span className="text-slate-400 font-mono">← / →</span>
+            </div>
+            <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
+              <table className="w-full text-left text-sm min-w-[800px]">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                     <th className="py-3 px-3 sm:px-4">Piece Code</th>
-                    <th className="py-3 px-4 hidden sm:table-cell">Category</th>
-                    <th className="py-3 px-4 hidden md:table-cell">Dimensions</th>
+                    <th className="py-3 px-3 sm:px-4">Category</th>
+                    <th className="py-3 px-3 sm:px-4">Dimensions</th>
                     <th className="py-3 px-3 sm:px-4 text-right">Weight</th>
-                    <th className="py-3 px-4 text-right hidden lg:table-cell">Cost Basis</th>
+                    <th className="py-3 px-3 sm:px-4 text-right">Cost Basis</th>
                     <th className="py-3 px-3 sm:px-4 text-right">Selling Price</th>
-                    <th className="py-3 px-2 sm:px-4 text-center">Status</th>
+                    <th className="py-3 px-3 sm:px-4 text-center">Status</th>
                     <th className="py-3 px-3 sm:px-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {coil.pieces.map((piece) => (
-                    <tr key={piece.id} className="transition-colors hover:bg-slate-50/80">
+                    <tr key={piece.id} className="transition-colors hover:bg-slate-50/80 whitespace-nowrap">
                       <td className="py-3 px-3 sm:px-4">
                         <Link
                           className="font-mono text-xs sm:text-sm font-semibold text-slate-900 hover:text-blue-600 hover:underline block"
@@ -222,22 +226,19 @@ export default function CoilDetailPage() {
                         >
                           {piece.piece_code}
                         </Link>
-                        <div className="text-[11px] text-slate-500 sm:hidden mt-0.5">
-                          {piece.category} · {piece.thickness_mm}×{piece.width_mm}mm
-                        </div>
                       </td>
-                      <td className="py-3 px-4 hidden sm:table-cell">
+                      <td className="py-3 px-3 sm:px-4">
                         <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
                           {piece.category}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-mono text-xs text-slate-700 hidden md:table-cell">
+                      <td className="py-3 px-3 sm:px-4 font-mono text-xs text-slate-700">
                         {piece.thickness_mm} × {piece.width_mm} × {piece.length_mm} mm
                       </td>
                       <td className="py-3 px-3 sm:px-4 text-right font-mono text-xs font-medium text-slate-900">
                         {Number(piece.weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
                       </td>
-                      <td className="py-3 px-4 text-right font-mono text-xs text-slate-600 hidden lg:table-cell">
+                      <td className="py-3 px-3 sm:px-4 text-right font-mono text-xs text-slate-600">
                         {formatCurrency(piece.allocated_cost)}
                       </td>
                       <td className="py-3 px-3 sm:px-4 text-right font-mono text-xs font-medium text-slate-900">
@@ -245,7 +246,7 @@ export default function CoilDetailPage() {
                           <span className="text-amber-600">Unpriced</span>
                         )}
                       </td>
-                      <td className="py-3 px-2 sm:px-4 text-center">
+                      <td className="py-3 px-3 sm:px-4 text-center">
                         <StatusBadge value={piece.status} />
                       </td>
                       <td className="py-3 px-3 sm:px-4 text-right">

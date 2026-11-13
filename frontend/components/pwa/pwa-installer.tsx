@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, Share, X, Smartphone, Check } from "lucide-react";
+import { Download, Share, X, Smartphone, RefreshCw } from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -15,18 +15,40 @@ export function PwaInstaller() {
   const [showIosGuide, setShowIosGuide] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [installed, setInstalled] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
-    // Register Service Worker
+    // Register Service Worker and aggressively check for updates
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
         .then((reg) => {
-          console.log("[PWA] Service Worker registered with scope:", reg.scope);
+          // Immediately check for updates
+          reg.update();
+
+          reg.addEventListener("updatefound", () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener("statechange", () => {
+                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                  setUpdateAvailable(true);
+                }
+              });
+            }
+          });
         })
         .catch((err) => {
           console.warn("[PWA] Service Worker registration failed:", err);
         });
+
+      // Reload when new SW controller activates
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
     }
 
     // Check if running in standalone display mode (already installed)
@@ -89,63 +111,84 @@ export function PwaInstaller() {
     sessionStorage.setItem("pwa_banner_dismissed", "true");
   }
 
-  // Do not show if already running inside standalone app, or already installed, or dismissed
-  if (isStandalone || installed || dismissed) {
-    return null;
-  }
-
-  // Only show if we either have an install prompt, or we're on iOS Safari
-  if (!deferredPrompt && !isIos) {
-    return null;
+  async function handleForceUpdate() {
+    if (typeof window === "undefined") return;
+    try {
+      if (window.caches) {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map((k) => window.caches.delete(k)));
+      }
+    } catch {
+      // Ignore cache clearing errors
+    }
+    window.location.reload();
   }
 
   return (
     <>
-      {/* Floating Installation Banner */}
-      <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-5 duration-300">
-        <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-700/80 bg-[#101923]/95 p-3.5 shadow-2xl backdrop-blur-md text-white">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 font-bold text-slate-950 shadow-md">
-              <span className="text-sm font-black">MC</span>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                Install Mobile App
-              </h4>
-              <p className="text-xs text-slate-300">
-                Add Metal Coil to your home screen for one-tap full-screen access.
-              </p>
-            </div>
-          </div>
-
+      {/* Top New-Version Alert Banner (Shows when code was updated on server) */}
+      {updateAvailable && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 text-slate-950 px-4 py-2.5 text-xs font-bold shadow-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleInstallClick}
-              className="flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-400 px-3.5 py-2 text-xs font-bold text-slate-950 transition hover:bg-amber-300 active:scale-95"
-            >
-              {isIos ? (
-                <>
-                  <Share size={14} />
-                  <span>How to Add</span>
-                </>
-              ) : (
-                <>
-                  <Download size={14} />
-                  <span>Install</span>
-                </>
-              )}
-            </button>
+            <RefreshCw size={14} className="animate-spin" />
+            <span>New updates deployed! Refresh to load the latest version.</span>
+          </div>
+          <button
+            onClick={handleForceUpdate}
+            className="rounded-lg bg-slate-950 px-3 py-1 text-white text-xs font-semibold hover:bg-slate-800"
+          >
+            Update Now
+          </button>
+        </div>
+      )}
 
-            <button
-              onClick={handleDismiss}
-              aria-label="Dismiss"
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
-            >
-              <X size={16} />
-            </button>
+      {/* Floating Installation Banner for Mobile */}
+      {!isStandalone && !installed && !dismissed && (deferredPrompt || isIos) && (
+        <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-700/80 bg-[#101923]/95 p-3.5 shadow-2xl backdrop-blur-md text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 font-bold text-slate-950 shadow-md">
+                <span className="text-sm font-black">MC</span>
+              </div>
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">
+                  Install Mobile App
+                </h4>
+                <p className="text-xs text-slate-300">
+                  Add Metal Coil to your home screen for full-screen standalone access.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleInstallClick}
+                className="flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-400 px-3.5 py-2 text-xs font-bold text-slate-950 transition hover:bg-amber-300 active:scale-95"
+              >
+                {isIos ? (
+                  <>
+                    <Share size={14} />
+                    <span>How to Add</span>
+                  </>
+                ) : (
+                  <>
+                    <Download size={14} />
+                    <span>Install</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleDismiss}
+                aria-label="Dismiss"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* iOS Installation Instruction Modal */}
       {showIosGuide && (
@@ -214,4 +257,3 @@ export function PwaInstaller() {
     </>
   );
 }
-

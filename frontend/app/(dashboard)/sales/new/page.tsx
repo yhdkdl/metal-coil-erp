@@ -307,67 +307,73 @@ export default function NewSalePage() {
                 : "No pieces match your search filter."}
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="sticky top-0 border-b border-slate-200 bg-white text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <tr>
-                    <th className="py-2.5 px-4 w-12 text-center">Select</th>
-                    <th className="py-2.5 px-4">Piece Code</th>
-                    <th className="py-2.5 px-4">Category</th>
-                    <th className="py-2.5 px-4">Grade</th>
-                    <th className="py-2.5 px-4">Dimensions</th>
-                    <th className="py-2.5 px-4 text-right">Weight</th>
-                    <th className="py-2.5 px-4 text-right">Selling Price</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {visiblePieces.map((piece) => {
-                    const isSelected = selected[piece.id] !== undefined;
-                    const isUnpriced = piece.selling_price == null;
-                    return (
-                      <tr
-                        key={piece.id}
-                        onClick={() => !isUnpriced && togglePiece(piece, !isSelected)}
-                        className={`transition-colors ${
-                          isUnpriced
-                            ? "cursor-not-allowed bg-slate-50/50 opacity-50"
-                            : isSelected
-                            ? "cursor-pointer bg-blue-50/70 hover:bg-blue-50"
-                            : "cursor-pointer hover:bg-slate-50"
-                        }`}
-                      >
-                        <td className="py-2.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            disabled={isUnpriced}
-                            checked={isSelected}
-                            onChange={(e) => togglePiece(piece, e.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                          />
-                        </td>
-                        <td className="py-2.5 px-4 font-mono text-xs font-semibold text-slate-900">
-                          {piece.piece_code}
-                        </td>
-                        <td className="py-2.5 px-4 text-xs text-slate-700">{piece.category}</td>
-                        <td className="py-2.5 px-4 font-mono text-xs text-slate-700">{piece.grade}</td>
-                        <td className="py-2.5 px-4 font-mono text-xs text-slate-500">
-                          {piece.thickness_mm} × {piece.width_mm} × {piece.length_mm} mm
-                        </td>
-                        <td className="py-2.5 px-4 text-right font-mono text-xs font-medium text-slate-900">
-                          {Number(piece.weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
-                        </td>
-                        <td className="py-2.5 px-4 text-right font-mono text-xs font-semibold text-slate-900">
-                          {isUnpriced ? (
-                            <span className="text-amber-700">Unpriced</span>
-                          ) : (
-                            formatCurrency(piece.selling_price)
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div>
+              <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between font-sans">
+                <span>👉 Swipe horizontally for all columns</span>
+                <span className="text-slate-400 font-mono">← / →</span>
+              </div>
+              <div className="max-h-96 overflow-y-auto overflow-x-auto touch-pan-x overscroll-x-contain">
+                <table className="w-full text-left text-sm min-w-[700px]">
+                  <thead className="sticky top-0 border-b border-slate-200 bg-white text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                    <tr>
+                      <th className="py-2.5 px-4 w-12 text-center">Select</th>
+                      <th className="py-2.5 px-4">Piece Code</th>
+                      <th className="py-2.5 px-4">Category</th>
+                      <th className="py-2.5 px-4">Grade</th>
+                      <th className="py-2.5 px-4">Dimensions</th>
+                      <th className="py-2.5 px-4 text-right">Weight</th>
+                      <th className="py-2.5 px-4 text-right">Selling Price</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {visiblePieces.map((piece) => {
+                      const isSelected = selected[piece.id] !== undefined;
+                      const isUnpriced = piece.selling_price == null;
+                      return (
+                        <tr
+                          key={piece.id}
+                          onClick={() => !isUnpriced && togglePiece(piece, !isSelected)}
+                          className={`transition-colors whitespace-nowrap ${
+                            isUnpriced
+                              ? "cursor-not-allowed bg-slate-50/50 opacity-50"
+                              : isSelected
+                              ? "cursor-pointer bg-blue-50/70 hover:bg-blue-50"
+                              : "cursor-pointer hover:bg-slate-50"
+                          }`}
+                        >
+                          <td className="py-2.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              disabled={isUnpriced}
+                              checked={isSelected}
+                              onChange={(e) => togglePiece(piece, e.target.checked)}
+                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            />
+                          </td>
+                          <td className="py-2.5 px-4 font-mono text-xs font-semibold text-slate-900">
+                            {piece.piece_code}
+                          </td>
+                          <td className="py-2.5 px-4 text-xs text-slate-700">{piece.category}</td>
+                          <td className="py-2.5 px-4 font-mono text-xs text-slate-700">{piece.grade}</td>
+                          <td className="py-2.5 px-4 font-mono text-xs text-slate-500">
+                            {piece.thickness_mm} × {piece.width_mm} × {piece.length_mm} mm
+                          </td>
+                          <td className="py-2.5 px-4 text-right font-mono text-xs font-medium text-slate-900">
+                            {Number(piece.weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
+                          </td>
+                          <td className="py-2.5 px-4 text-right font-mono text-xs font-semibold text-slate-900">
+                            {isUnpriced ? (
+                              <span className="text-amber-700">Unpriced</span>
+                            ) : (
+                              formatCurrency(piece.selling_price)
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </Card>

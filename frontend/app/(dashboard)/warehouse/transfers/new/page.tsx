@@ -202,7 +202,7 @@ export default function NewTransferPage() {
             </div>
           </div>
 
-          <div className="border-b border-slate-100 bg-slate-50/50 p-3">
+          <div className="border-b border-slate-100 bg-slate-50/50 p-3 sm:flex sm:items-center sm:justify-between gap-3">
             <input
               type="text"
               placeholder="Filter by piece code, grade, or category..."
@@ -210,6 +210,9 @@ export default function NewTransferPage() {
               onChange={(e) => setSearch(e.target.value)}
               className="h-9 w-full max-w-sm rounded-lg border border-slate-200 px-3 text-xs focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
             />
+            <div className="mt-2 sm:mt-0 text-[11px] text-slate-500 font-medium sm:hidden flex items-center gap-1">
+              <span>↔ Swipe table horizontally to see all specifications</span>
+            </div>
           </div>
 
           {filteredPieces.length === 0 ? (
@@ -219,16 +222,16 @@ export default function NewTransferPage() {
                 : "No pieces match your filter."}
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto overflow-x-auto w-full max-w-full">
-              <table className="w-full text-left text-sm">
+            <div className="max-h-96 overflow-y-auto overflow-x-auto w-full max-w-full touch-pan-x overscroll-x-contain">
+              <table className="w-full text-left text-sm min-w-[640px]">
                 <thead className="sticky top-0 border-b border-slate-200 bg-white text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <tr>
                     <th className="py-2.5 px-3 sm:px-4 w-10 text-center">Select</th>
-                    <th className="py-2.5 px-3 sm:px-4">Piece Code</th>
-                    <th className="py-2.5 px-4 hidden sm:table-cell">Category</th>
-                    <th className="py-2.5 px-4 hidden sm:table-cell">Grade</th>
-                    <th className="py-2.5 px-4 hidden md:table-cell">Dimensions</th>
-                    <th className="py-2.5 px-3 sm:px-4 text-right">Weight</th>
+                    <th className="py-2.5 px-3 sm:px-4 whitespace-nowrap">Piece Code</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Category</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Grade</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Dimensions (T × W × L)</th>
+                    <th className="py-2.5 px-3 sm:px-4 text-right whitespace-nowrap">Weight</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -250,25 +253,19 @@ export default function NewTransferPage() {
                             className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                           />
                         </td>
-                        <td className="py-2.5 px-3 sm:px-4">
-                          <div className="font-mono text-xs font-semibold text-slate-900">
-                            {piece.piece_code}
-                          </div>
-                          <div className="text-[11px] text-slate-500 sm:hidden">
-                            {piece.category} · {piece.grade}
-                            <span className="text-slate-400"> ({piece.thickness_mm}mm)</span>
-                          </div>
+                        <td className="py-2.5 px-3 sm:px-4 font-mono text-xs font-semibold text-slate-900 whitespace-nowrap">
+                          {piece.piece_code}
                         </td>
-                        <td className="py-2.5 px-4 text-xs text-slate-700 hidden sm:table-cell">
+                        <td className="py-2.5 px-4 text-xs text-slate-700 whitespace-nowrap">
                           {piece.category}
                         </td>
-                        <td className="py-2.5 px-4 font-mono text-xs text-slate-700 hidden sm:table-cell">
+                        <td className="py-2.5 px-4 font-mono text-xs text-slate-700 whitespace-nowrap">
                           {piece.grade}
                         </td>
-                        <td className="py-2.5 px-4 font-mono text-xs text-slate-500 hidden md:table-cell">
+                        <td className="py-2.5 px-4 font-mono text-xs text-slate-600 whitespace-nowrap">
                           {piece.thickness_mm} × {piece.width_mm} × {piece.length_mm} mm
                         </td>
-                        <td className="py-2.5 px-3 sm:px-4 text-right font-mono text-xs font-medium text-slate-900">
+                        <td className="py-2.5 px-3 sm:px-4 text-right font-mono text-xs font-medium text-slate-900 whitespace-nowrap">
                           {Number(piece.weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
                         </td>
                       </tr>

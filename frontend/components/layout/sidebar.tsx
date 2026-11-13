@@ -13,6 +13,7 @@ import {
   Layers3,
   LogOut,
   PackageCheck,
+  RefreshCw,
   Settings2,
   ShoppingCart,
   Warehouse,
@@ -45,6 +46,19 @@ export function Sidebar({
   function logout() {
     localStorage.clear();
     router.push("/login");
+  }
+
+  async function forceRefresh() {
+    if (typeof window === "undefined") return;
+    try {
+      if (window.caches) {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map((k) => window.caches.delete(k)));
+      }
+    } catch {
+      // Ignore cache clearing errors
+    }
+    window.location.reload();
   }
 
   const content = (
@@ -104,7 +118,16 @@ export function Sidebar({
       </div>
 
       {/* Mobile User & Logout Footer */}
-      <div className="border-t border-white/10 p-4">
+      <div className="border-t border-white/10 p-4 space-y-2.5">
+        <button
+          onClick={forceRefresh}
+          title="Reload latest updates from server"
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2 text-xs text-slate-300 hover:bg-white/10 hover:text-white transition active:scale-98"
+        >
+          <RefreshCw size={13} />
+          <span>Check for Updates / Reload</span>
+        </button>
+
         <div className="flex items-center justify-between rounded-xl bg-white/[0.04] p-3 text-xs">
           <div className="flex items-center gap-2.5">
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-amber-400/20 font-mono font-bold text-amber-300">

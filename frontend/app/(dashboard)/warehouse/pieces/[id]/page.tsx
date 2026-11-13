@@ -243,14 +243,19 @@ export default function PieceDetailPage() {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+              <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+                <span>👉 Swipe horizontally for all columns</span>
+                <span className="text-slate-400 font-mono">← / →</span>
+              </div>
+
+              <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
+                <table className="w-full text-left text-sm min-w-[550px]">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                       <th className="p-3 sm:p-3.5">Timestamp</th>
                       <th className="p-3 sm:p-3.5">Type</th>
                       <th className="p-3 sm:p-3.5 text-right">Weight</th>
-                      <th className="p-3.5 hidden sm:table-cell">Log Note</th>
+                      <th className="p-3 sm:p-3.5">Log Note</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -262,17 +267,12 @@ export default function PieceDetailPage() {
                       </tr>
                     ) : (
                       movements.map((m) => (
-                        <tr key={m.id} className="transition hover:bg-slate-50/70">
+                        <tr key={m.id} className="transition hover:bg-slate-50/70 whitespace-nowrap">
                           <td className="p-3 sm:p-3.5 font-mono text-xs text-slate-600">
                             <div>{new Date(m.created_at).toLocaleDateString()}</div>
                             <div className="text-[10px] text-slate-400">
                               {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                             </div>
-                            {m.note && (
-                              <div className="text-[11px] text-slate-500 italic sm:hidden mt-0.5">
-                                {m.note}
-                              </div>
-                            )}
                           </td>
                           <td className="p-3 sm:p-3.5">
                             <StatusBadge value={m.movement_type} />
@@ -280,7 +280,7 @@ export default function PieceDetailPage() {
                           <td className="p-3 sm:p-3.5 text-right font-mono font-bold text-slate-900 text-xs">
                             {m.weight_kg} kg
                           </td>
-                          <td className="p-3.5 text-xs text-slate-500 hidden sm:table-cell">{m.note ?? "—"}</td>
+                          <td className="p-3 sm:p-3.5 text-xs text-slate-600 font-normal">{m.note ?? "—"}</td>
                         </tr>
                       ))
                     )}

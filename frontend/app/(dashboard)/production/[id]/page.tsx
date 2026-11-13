@@ -195,52 +195,53 @@ export default function ProductionDetailPage() {
                 {outputs.length === 0 ? (
                   <EmptyState>No cuts staged yet. Add piece outputs below.</EmptyState>
                 ) : (
-                  <div className="overflow-x-auto rounded-xl border border-slate-200">
-                    <table className="w-full text-left text-xs">
-                      <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 font-semibold uppercase tracking-wider text-slate-500">
-                          <th className="p-2.5 sm:p-3 w-8">#</th>
-                          <th className="p-2.5 sm:p-3">Category</th>
-                          <th className="p-3 hidden sm:table-cell">Grade</th>
-                          <th className="p-3 hidden md:table-cell">Dimensions (T × W × L)</th>
-                          <th className="p-2.5 sm:p-3 text-right">Piece Weight</th>
-                          {isOpen && <th className="p-2.5 sm:p-3 text-right">Action</th>}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {outputs.map((output, index) => (
-                          <tr key={output.id} className="transition hover:bg-slate-50/70">
-                            <td className="p-2.5 sm:p-3 font-mono font-bold text-slate-400">{index + 1}</td>
-                            <td className="p-2.5 sm:p-3">
-                              <span className="font-bold text-slate-900 block">{output.category}</span>
-                              <span className="text-[10px] text-slate-500 sm:hidden">
-                                {output.grade} · {output.thickness_mm}×{output.width_mm}mm
-                              </span>
-                            </td>
-                            <td className="p-3 text-slate-700 hidden sm:table-cell">{output.grade}</td>
-                            <td className="p-3 font-mono text-slate-600 hidden md:table-cell">
-                              {output.thickness_mm} × {output.width_mm} × {output.length_mm} mm
-                            </td>
-                            <td className="p-2.5 sm:p-3 text-right font-mono font-bold text-slate-800">
-                              {output.weight_kg} kg
-                            </td>
-                            {isOpen && (
-                              <td className="p-2.5 sm:p-3 text-right">
-                                <button
-                                  type="button"
-                                  disabled={busy}
-                                  onClick={() => removeOutput(output.id)}
-                                  className="text-slate-400 hover:text-rose-600 transition"
-                                  title="Delete staged output"
-                                >
-                                  <Trash2 size={15} />
-                                </button>
-                              </td>
-                            )}
+                  <div className="rounded-xl border border-slate-200 overflow-hidden">
+                    <div className="sm:hidden px-3 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+                      <span>👉 Swipe horizontally for all columns</span>
+                      <span className="text-slate-400 font-mono">← / →</span>
+                    </div>
+                    <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
+                      <table className="w-full text-left text-xs min-w-[650px]">
+                        <thead>
+                          <tr className="border-b border-slate-200 bg-slate-50 font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                            <th className="p-2.5 sm:p-3 w-8">#</th>
+                            <th className="p-2.5 sm:p-3">Category</th>
+                            <th className="p-2.5 sm:p-3">Grade</th>
+                            <th className="p-2.5 sm:p-3">Dimensions (T × W × L)</th>
+                            <th className="p-2.5 sm:p-3 text-right">Piece Weight</th>
+                            {isOpen && <th className="p-2.5 sm:p-3 text-right">Action</th>}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {outputs.map((output, index) => (
+                            <tr key={output.id} className="transition hover:bg-slate-50/70 whitespace-nowrap">
+                              <td className="p-2.5 sm:p-3 font-mono font-bold text-slate-400">{index + 1}</td>
+                              <td className="p-2.5 sm:p-3 font-bold text-slate-900">{output.category}</td>
+                              <td className="p-2.5 sm:p-3 text-slate-700">{output.grade}</td>
+                              <td className="p-2.5 sm:p-3 font-mono text-slate-600">
+                                {output.thickness_mm} × {output.width_mm} × {output.length_mm} mm
+                              </td>
+                              <td className="p-2.5 sm:p-3 text-right font-mono font-bold text-slate-800">
+                                {output.weight_kg} kg
+                              </td>
+                              {isOpen && (
+                                <td className="p-2.5 sm:p-3 text-right">
+                                  <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={() => removeOutput(output.id)}
+                                    className="text-slate-400 hover:text-rose-600 transition"
+                                    title="Delete staged output"
+                                  >
+                                    <Trash2 size={15} />
+                                  </button>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>

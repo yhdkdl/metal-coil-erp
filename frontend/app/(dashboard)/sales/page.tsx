@@ -299,37 +299,35 @@ export default function SalesPage() {
         <EmptyState>No matching sales recorded.</EmptyState>
       ) : (
         <Card className="border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="sm:hidden px-4 py-2 bg-slate-50 border-b border-slate-100 text-[11px] text-slate-500 font-medium flex items-center justify-between">
+            <span>↔ Swipe table horizontally to see all columns</span>
+            <span className="font-mono text-[10px] text-slate-400">6 columns</span>
+          </div>
+          <div className="overflow-x-auto w-full max-w-full touch-pan-x overscroll-x-contain">
+            <table className="w-full text-left text-sm min-w-[750px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="p-3 sm:p-4">Sale Order</th>
-                  <th className="p-4 hidden sm:table-cell">Customer</th>
-                  <th className="p-4 hidden md:table-cell">Channel</th>
-                  <th className="p-3 sm:p-4 text-right">Total Amount</th>
-                  <th className="p-3 sm:p-4 text-center">Status</th>
-                  <th className="p-4 hidden lg:table-cell">Date</th>
+                  <th className="p-3.5 whitespace-nowrap">Sale Order</th>
+                  <th className="p-3.5 whitespace-nowrap">Customer Name</th>
+                  <th className="p-3.5 whitespace-nowrap">Channel</th>
+                  <th className="p-3.5 text-right whitespace-nowrap">Total Amount</th>
+                  <th className="p-3.5 text-center whitespace-nowrap">Status</th>
+                  <th className="p-3.5 whitespace-nowrap">Order Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {sales.map((sale) => (
                   <tr key={sale.id} className="transition hover:bg-slate-50/80">
-                    <td className="p-3 sm:p-4">
+                    <td className="p-3.5 whitespace-nowrap">
                       <Link
-                        className="font-bold text-blue-600 hover:underline block font-mono text-xs sm:text-sm"
+                        className="font-bold text-blue-600 hover:underline block font-mono text-xs"
                         href={`/sales/${sale.id}`}
                       >
                         {sale.sale_number}
                       </Link>
-                      <div className="text-[11px] font-medium text-slate-900 sm:hidden mt-0.5">
-                        {sale.customer_name}
-                      </div>
-                      <div className="text-[10px] text-slate-400 sm:hidden">
-                        {sale.sale_type} · {new Date(sale.created_at).toLocaleDateString()}
-                      </div>
                     </td>
-                    <td className="p-4 font-medium text-slate-900 hidden sm:table-cell">{sale.customer_name}</td>
-                    <td className="p-4 hidden md:table-cell">
+                    <td className="p-3.5 font-medium text-slate-900 whitespace-nowrap">{sale.customer_name}</td>
+                    <td className="p-3.5 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium ${
                           sale.sale_type === "BULK"
@@ -340,19 +338,19 @@ export default function SalesPage() {
                         {sale.sale_type}
                       </span>
                     </td>
-                    <td className="p-3 sm:p-4 font-mono font-semibold text-slate-900 text-right text-xs sm:text-sm">
+                    <td className="p-3.5 font-mono font-semibold text-slate-900 text-right text-xs whitespace-nowrap">
                       ${parseFloat(sale.total_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="p-3 sm:p-4 text-center">
+                    <td className="p-3.5 text-center whitespace-nowrap">
                       <StatusBadge value={sale.status} />
                     </td>
-                    <td className="p-4 text-xs text-slate-500 hidden lg:table-cell">
+                    <td className="p-3.5 text-xs text-slate-500 whitespace-nowrap">
                       {new Date(sale.created_at).toLocaleString(undefined, {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
                         hour: "2-digit",
-                        minute: "2-digit"
+                        minute: "2-digit",
                       })}
                     </td>
                   </tr>

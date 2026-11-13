@@ -206,16 +206,20 @@ export default function RevenuePage() {
         <EmptyState>No periodic revenue data found for this selection.</EmptyState>
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+            <span>👉 Swipe horizontally for all columns</span>
+            <span className="text-slate-400 font-mono">← / →</span>
+          </div>
+          <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
+            <table className="w-full text-left text-sm min-w-[700px]">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                   <th className="py-3 px-3 sm:px-4">Period</th>
                   <th className="py-3 px-3 sm:px-4 text-right">Revenue</th>
-                  <th className="py-3 px-4 text-right hidden sm:table-cell">COGS</th>
+                  <th className="py-3 px-3 sm:px-4 text-right">COGS</th>
                   <th className="py-3 px-3 sm:px-4 text-right">Gross Profit</th>
-                  <th className="py-3 px-2 sm:px-4 text-center">Margin</th>
-                  <th className="py-3 px-4 text-right hidden md:table-cell">Orders</th>
+                  <th className="py-3 px-3 sm:px-4 text-center">Margin</th>
+                  <th className="py-3 px-3 sm:px-4 text-right">Orders</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-xs">
@@ -225,28 +229,25 @@ export default function RevenuePage() {
                   const profit = parseFloat(row.gross_profit) || 0;
                   const marginPct = rev > 0 ? (profit / rev) * 100 : 0;
                   return (
-                    <tr key={row.start} className="transition-colors hover:bg-slate-50">
+                    <tr key={row.start} className="transition-colors hover:bg-slate-50 whitespace-nowrap">
                       <td className="py-3 px-3 sm:px-4 font-sans text-xs font-medium text-slate-900">
                         <div>{new Date(row.start).toLocaleDateString()}</div>
                         {row.end !== row.start && (
                           <div className="text-[10px] text-slate-400">to {new Date(row.end).toLocaleDateString()}</div>
                         )}
-                        <div className="text-[10px] text-slate-400 sm:hidden">
-                          {row.sale_count} orders
-                        </div>
                       </td>
                       <td className="py-3 px-3 sm:px-4 text-right font-medium text-slate-900">
                         {formatCurrency(rev)}
                       </td>
-                      <td className="py-3 px-4 text-right text-slate-600 hidden sm:table-cell">
+                      <td className="py-3 px-3 sm:px-4 text-right text-slate-600">
                         {formatCurrency(cogs)}
                       </td>
                       <td className={`py-3 px-3 sm:px-4 text-right font-bold ${profit >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                         {formatCurrency(profit)}
                       </td>
-                      <td className="py-3 px-2 sm:px-4 text-center">
+                      <td className="py-3 px-3 sm:px-4 text-center">
                         <span
-                          className={`inline-block rounded px-1.5 sm:px-2 py-0.5 text-[10px] font-bold ${
+                          className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold ${
                             marginPct >= 20
                               ? "bg-emerald-50 text-emerald-700"
                               : marginPct > 0
@@ -257,7 +258,7 @@ export default function RevenuePage() {
                           {marginPct.toFixed(1)}%
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right text-slate-700 hidden md:table-cell">
+                      <td className="py-3 px-3 sm:px-4 text-right font-medium text-slate-700">
                         {row.sale_count}
                       </td>
                     </tr>

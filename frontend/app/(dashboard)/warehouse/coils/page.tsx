@@ -165,58 +165,59 @@ export default function CoilsPage() {
         </EmptyState>
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="sm:hidden px-4 py-2 bg-slate-50 border-b border-slate-100 text-[11px] text-slate-500 font-medium flex items-center justify-between">
+            <span>↔ Swipe table horizontally to see all columns</span>
+            <span className="font-mono text-[10px] text-slate-400">8 columns</span>
+          </div>
+          <div className="overflow-x-auto w-full max-w-full touch-pan-x overscroll-x-contain">
+            <table className="w-full text-left text-sm min-w-[800px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="py-3 px-3 sm:px-4">Coil Number</th>
-                  <th className="py-3 px-4 hidden sm:table-cell">Heat / Supplier</th>
-                  <th className="py-3 px-4 hidden md:table-cell">Grade</th>
-                  <th className="py-3 px-4 hidden md:table-cell">Dimensions</th>
-                  <th className="py-3 px-3 sm:px-4 text-right">Weight</th>
-                  <th className="py-3 px-4 text-right hidden lg:table-cell">Unit Cost</th>
-                  <th className="py-3 px-2 sm:px-4 text-center">Status</th>
-                  <th className="py-3 px-3 sm:px-4 text-right">Actions</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Coil Number</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Heat / Supplier</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Grade</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Dimensions</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Weight</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Unit Cost</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredCoils.map((c) => (
                   <tr key={c.id} className="transition-colors hover:bg-slate-50/80">
-                    <td className="py-3 px-3 sm:px-4">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       <Link
-                        className="font-mono text-xs sm:text-sm font-semibold text-slate-900 hover:text-blue-600 hover:underline block"
+                        className="font-mono text-sm font-semibold text-slate-900 hover:text-blue-600 hover:underline block"
                         href={`/warehouse/coils/${c.id}`}
                       >
                         {c.coil_number}
                       </Link>
-                      <div className="text-[11px] text-slate-500 sm:hidden mt-0.5">
-                        {c.grade} · {c.thickness_mm}×{c.width_mm}mm
-                      </div>
-                      <div className="text-[11px] text-slate-400">
-                        Heat: {c.heat_number}
+                      <div className="text-xs text-slate-400">
+                        {new Date(c.created_at).toLocaleDateString()}
                       </div>
                     </td>
-                    <td className="py-3 px-4 hidden sm:table-cell">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       <div className="font-medium text-slate-800">{c.heat_number}</div>
                       <div className="text-xs text-slate-500">{c.supplier}</div>
                     </td>
-                    <td className="py-3 px-4 hidden md:table-cell">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
                         {c.grade}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-slate-700 font-mono text-xs hidden md:table-cell">
+                    <td className="py-3 px-4 text-slate-700 font-mono text-xs whitespace-nowrap">
                       {c.thickness_mm} × {c.width_mm} mm
                     </td>
-                    <td className="py-3 px-3 sm:px-4 text-right font-medium text-slate-900">
-                      <span className="font-mono text-xs sm:text-sm">
+                    <td className="py-3 px-4 text-right font-medium text-slate-900 whitespace-nowrap">
+                      <span className="font-mono text-sm">
                         {Number(c.total_weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
                       </span>
-                      <div className="text-[10px] text-slate-400">
-                        {(Number(c.total_weight_kg) / 1000).toFixed(2)} t
+                      <div className="text-xs text-slate-400 font-mono">
+                        {(Number(c.total_weight_kg) / 1000).toFixed(2)} tons
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right text-slate-700 hidden lg:table-cell">
+                    <td className="py-3 px-4 text-right text-slate-700 whitespace-nowrap">
                       <div className="font-mono text-xs">
                         {c.cost_per_kg ? `${formatCurrency(c.cost_per_kg)}/kg` : "—"}
                       </div>
@@ -224,23 +225,23 @@ export default function CoilsPage() {
                         {formatCurrency(c.total_cost)}
                       </div>
                     </td>
-                    <td className="py-3 px-2 sm:px-4 text-center">
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
                       <StatusBadge value={c.status} />
                     </td>
-                    <td className="py-3 px-3 sm:px-4 text-right">
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
                       {c.status === "IN_STOCK" ? (
                         <Link
                           href={`/production/new?coil_id=${c.id}`}
-                          className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[11px] sm:text-xs font-medium text-blue-700 hover:bg-blue-100"
+                          className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100"
                         >
-                          Cut →
+                          Cut / Slit →
                         </Link>
                       ) : (
                         <Link
                           href={`/warehouse/coils/${c.id}`}
-                          className="text-[11px] sm:text-xs font-medium text-slate-500 hover:text-slate-800"
+                          className="text-xs font-medium text-slate-500 hover:text-slate-800"
                         >
-                          View →
+                          View Details →
                         </Link>
                       )}
                     </td>

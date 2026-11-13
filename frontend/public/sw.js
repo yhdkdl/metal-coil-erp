@@ -1,7 +1,8 @@
-// Service Worker for Metal Coil ERP PWA
-const CACHE_NAME = 'metal-coil-erp-v1';
-const STATIC_ASSETS = [
-  '/',
+// Service Worker for Metal Coil ERP PWA - Version 3.0
+const CACHE_NAME = 'metal-coil-erp-v3';
+
+// Only cache immutable static icons and assets, NEVER HTML pages or API responses
+const IMMUTABLE_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -11,15 +12,17 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
+  // Force active immediately on install
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll(IMMUTABLE_ASSETS);
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+  // Clean up all old caches immediately
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
@@ -29,39 +32,42 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Network-first strategy: always fetch fresh ERP data; fallback to cache if offline
 self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
 
-  // Avoid caching backend API requests so financial and inventory data is never stale
+  // 1. NEVER cache API requests - always live from backend
   if (url.pathname.startsWith('/api/')) {
     return;
   }
 
+  // 2. HTML Page Navigations: ALWAYS fetch from network with no-cache so latest deploy is seen!
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-cache' })
+        .catch(() => caches.match('/'))
+    );
+    return;
+  }
+
+  // 3. Static assets: Network first, fallback to cache
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // If response is valid, clone and update cache for static assets/pages
         if (response && response.status === 200 && response.type === 'basic') {
-          const responseToCache = response.clone();
+          const toCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
+            cache.put(event.request, toCache);
           });
         }
         return response;
       })
-      .catch(() => {
-        // Fallback to cache if network fails (offline mode)
-        return caches.match(event.request);
-      })
+      .catch(() => caches.match(event.request))
   );
 });
-

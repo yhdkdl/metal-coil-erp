@@ -169,21 +169,26 @@ export default function SaleDetailPage() {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+              <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between font-sans">
+                <span>👉 Swipe horizontally for all columns</span>
+                <span className="text-slate-400 font-mono">← / →</span>
+              </div>
+
+              <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
+                <table className="w-full text-left text-sm min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                       <th className="p-3 sm:p-3.5">Piece Code</th>
-                      <th className="p-3.5 hidden sm:table-cell">Category</th>
-                      <th className="p-3.5 hidden md:table-cell">Grade</th>
-                      <th className="p-3.5 hidden md:table-cell">Dimensions</th>
+                      <th className="p-3 sm:p-3.5">Category</th>
+                      <th className="p-3 sm:p-3.5">Grade</th>
+                      <th className="p-3 sm:p-3.5">Dimensions</th>
                       <th className="p-3 sm:p-3.5 text-right">Weight</th>
                       <th className="p-3 sm:p-3.5 text-right">Sale Price</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {sale.line_items.map((item, idx) => (
-                      <tr key={item.piece_id || idx} className="transition hover:bg-slate-50/70">
+                      <tr key={item.piece_id || idx} className="transition hover:bg-slate-50/70 whitespace-nowrap">
                         <td className="p-3 sm:p-3.5">
                           <Link
                             href={`/warehouse/pieces/${item.piece_id}`}
@@ -191,13 +196,10 @@ export default function SaleDetailPage() {
                           >
                             {item.piece_code || item.piece_id.slice(0, 12)}
                           </Link>
-                          <div className="text-[11px] text-slate-500 sm:hidden mt-0.5">
-                            {item.category || "Piece"} · {item.grade || "Standard"}
-                          </div>
                         </td>
-                        <td className="p-3.5 font-medium text-slate-800 hidden sm:table-cell">{item.category || "—"}</td>
-                        <td className="p-3.5 text-slate-600 hidden md:table-cell">{item.grade || "—"}</td>
-                        <td className="p-3.5 font-mono text-slate-600 hidden md:table-cell">
+                        <td className="p-3 sm:p-3.5 font-medium text-slate-800">{item.category || "—"}</td>
+                        <td className="p-3 sm:p-3.5 text-slate-600">{item.grade || "—"}</td>
+                        <td className="p-3 sm:p-3.5 font-mono text-slate-600">
                           {item.thickness_mm ? `${item.thickness_mm} × ${item.width_mm} × ${item.length_mm} mm` : "—"}
                         </td>
                         <td className="p-3 sm:p-3.5 text-right font-mono text-xs sm:text-sm text-slate-700">
@@ -210,10 +212,10 @@ export default function SaleDetailPage() {
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t-2 border-slate-200 bg-slate-50 font-bold text-slate-900">
-                      <td colSpan={2} className="p-3 sm:p-3.5 hidden sm:table-cell">Total Sale Amount</td>
-                      <td colSpan={2} className="p-3 text-xs sm:hidden">Total</td>
-                      <td className="hidden sm:table-cell" colSpan={3}></td>
+                    <tr className="border-t-2 border-slate-200 bg-slate-50 font-bold text-slate-900 whitespace-nowrap">
+                      <td colSpan={5} className="p-3 sm:p-3.5 text-right uppercase text-xs tracking-wider text-slate-600">
+                        Total Sale Amount
+                      </td>
                       <td className="p-3 sm:p-3.5 text-right font-mono text-sm sm:text-base">
                         ${parseFloat(sale.total_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>

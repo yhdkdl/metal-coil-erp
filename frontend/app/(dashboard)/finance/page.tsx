@@ -557,10 +557,14 @@ export default function FinancePage() {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between font-sans">
+                <span>👉 Swipe horizontally for all columns</span>
+                <span className="text-slate-400 font-mono">← / →</span>
+              </div>
+              <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
                 <table className="w-full min-w-[840px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                       <th className="p-3.5">Category / Name</th>
                       <th className="p-3.5">Thickness</th>
                       <th className="p-3.5">Customer</th>
@@ -675,10 +679,14 @@ export default function FinancePage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between font-sans">
+                <span>👉 Swipe horizontally for all columns</span>
+                <span className="text-slate-400 font-mono">← / →</span>
+              </div>
+              <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
                 <table className="w-full min-w-[700px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                       <th className="p-3.5">Date Period</th>
                       <th className="p-3.5 text-right">Gross Revenue</th>
                       <th className="p-3.5 text-right">COGS</th>
@@ -748,10 +756,14 @@ export default function FinancePage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between font-sans">
+              <span>👉 Swipe horizontally for all columns</span>
+              <span className="text-slate-400 font-mono">← / →</span>
+            </div>
+            <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
               <table className="w-full min-w-[820px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                     <th className="p-3.5">Coil Number</th>
                     <th className="p-3.5 text-right">Sold Pieces</th>
                     <th className="p-3.5 text-right">Unsold Pieces</th>
@@ -874,10 +886,15 @@ export default function FinancePage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+              <div className="sm:hidden px-4 py-1.5 bg-slate-100/70 border-b border-slate-200 text-[11px] text-slate-500 flex items-center justify-between font-sans">
+                <span>👉 Swipe horizontally for all columns</span>
+                <span className="text-slate-400 font-mono">← / →</span>
+              </div>
+
+              <div className="overflow-x-auto touch-pan-x overscroll-x-contain">
+                <table className="w-full text-left text-sm min-w-[650px]">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                       <th className="p-4">Warehouse Facility</th>
                       <th className="p-4 text-right">Unsold Pieces</th>
                       <th className="p-4 text-right">Cost Value Basis</th>
@@ -891,7 +908,7 @@ export default function FinancePage() {
                       const listVal = parseFloat(row.list_value) || 0;
                       const unrealized = listVal - costVal;
                       return (
-                        <tr key={row.warehouse_id} className="transition hover:bg-slate-50/70">
+                        <tr key={row.warehouse_id} className="transition hover:bg-slate-50/70 whitespace-nowrap">
                           <td className="p-4 font-semibold text-slate-900">{row.warehouse_name}</td>
                           <td className="p-4 text-right font-mono">{row.piece_count}</td>
                           <td className="p-4 text-right font-mono text-slate-600">
