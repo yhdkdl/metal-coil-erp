@@ -303,27 +303,33 @@ export default function SalesPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="p-4">Sale Order</th>
-                  <th className="p-4">Customer</th>
-                  <th className="p-4">Channel</th>
-                  <th className="p-4">Total Amount</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Date</th>
+                  <th className="p-3 sm:p-4">Sale Order</th>
+                  <th className="p-4 hidden sm:table-cell">Customer</th>
+                  <th className="p-4 hidden md:table-cell">Channel</th>
+                  <th className="p-3 sm:p-4 text-right">Total Amount</th>
+                  <th className="p-3 sm:p-4 text-center">Status</th>
+                  <th className="p-4 hidden lg:table-cell">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {sales.map((sale) => (
                   <tr key={sale.id} className="transition hover:bg-slate-50/80">
-                    <td className="p-4">
+                    <td className="p-3 sm:p-4">
                       <Link
-                        className="font-medium text-blue-600 hover:underline"
+                        className="font-bold text-blue-600 hover:underline block font-mono text-xs sm:text-sm"
                         href={`/sales/${sale.id}`}
                       >
                         {sale.sale_number}
                       </Link>
+                      <div className="text-[11px] font-medium text-slate-900 sm:hidden mt-0.5">
+                        {sale.customer_name}
+                      </div>
+                      <div className="text-[10px] text-slate-400 sm:hidden">
+                        {sale.sale_type} · {new Date(sale.created_at).toLocaleDateString()}
+                      </div>
                     </td>
-                    <td className="p-4 font-medium text-slate-900">{sale.customer_name}</td>
-                    <td className="p-4">
+                    <td className="p-4 font-medium text-slate-900 hidden sm:table-cell">{sale.customer_name}</td>
+                    <td className="p-4 hidden md:table-cell">
                       <span
                         className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium ${
                           sale.sale_type === "BULK"
@@ -334,13 +340,13 @@ export default function SalesPage() {
                         {sale.sale_type}
                       </span>
                     </td>
-                    <td className="p-4 font-mono font-semibold text-slate-900">
+                    <td className="p-3 sm:p-4 font-mono font-semibold text-slate-900 text-right text-xs sm:text-sm">
                       ${parseFloat(sale.total_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="p-4">
+                    <td className="p-3 sm:p-4 text-center">
                       <StatusBadge value={sale.status} />
                     </td>
-                    <td className="p-4 text-xs text-slate-500">
+                    <td className="p-4 text-xs text-slate-500 hidden lg:table-cell">
                       {new Date(sale.created_at).toLocaleString(undefined, {
                         year: "numeric",
                         month: "short",

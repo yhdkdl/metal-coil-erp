@@ -202,53 +202,56 @@ export default function CoilDetailPage() {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    <th className="py-3 px-4">Piece Code</th>
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4">Dimensions (T × W × L)</th>
-                    <th className="py-3 px-4 text-right">Weight</th>
-                    <th className="py-3 px-4 text-right">Cost Basis</th>
-                    <th className="py-3 px-4 text-right">Selling Price</th>
-                    <th className="py-3 px-4 text-center">Status</th>
-                    <th className="py-3 px-4 text-right">Action</th>
+                    <th className="py-3 px-3 sm:px-4">Piece Code</th>
+                    <th className="py-3 px-4 hidden sm:table-cell">Category</th>
+                    <th className="py-3 px-4 hidden md:table-cell">Dimensions</th>
+                    <th className="py-3 px-3 sm:px-4 text-right">Weight</th>
+                    <th className="py-3 px-4 text-right hidden lg:table-cell">Cost Basis</th>
+                    <th className="py-3 px-3 sm:px-4 text-right">Selling Price</th>
+                    <th className="py-3 px-2 sm:px-4 text-center">Status</th>
+                    <th className="py-3 px-3 sm:px-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {coil.pieces.map((piece) => (
                     <tr key={piece.id} className="transition-colors hover:bg-slate-50/80">
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-3 sm:px-4">
                         <Link
-                          className="font-mono text-sm font-semibold text-slate-900 hover:text-blue-600 hover:underline"
+                          className="font-mono text-xs sm:text-sm font-semibold text-slate-900 hover:text-blue-600 hover:underline block"
                           href={`/warehouse/pieces/${piece.id}`}
                         >
                           {piece.piece_code}
                         </Link>
+                        <div className="text-[11px] text-slate-500 sm:hidden mt-0.5">
+                          {piece.category} · {piece.thickness_mm}×{piece.width_mm}mm
+                        </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 hidden sm:table-cell">
                         <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
                           {piece.category}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-mono text-xs text-slate-700">
+                      <td className="py-3 px-4 font-mono text-xs text-slate-700 hidden md:table-cell">
                         {piece.thickness_mm} × {piece.width_mm} × {piece.length_mm} mm
                       </td>
-                      <td className="py-3 px-4 text-right font-mono text-xs font-medium text-slate-900">
+                      <td className="py-3 px-3 sm:px-4 text-right font-mono text-xs font-medium text-slate-900">
                         {Number(piece.weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
                       </td>
-                      <td className="py-3 px-4 text-right font-mono text-xs text-slate-600">
+                      <td className="py-3 px-4 text-right font-mono text-xs text-slate-600 hidden lg:table-cell">
                         {formatCurrency(piece.allocated_cost)}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono text-xs font-medium text-slate-900">
+                      <td className="py-3 px-3 sm:px-4 text-right font-mono text-xs font-medium text-slate-900">
                         {piece.selling_price ? formatCurrency(piece.selling_price) : (
                           <span className="text-amber-600">Unpriced</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-2 sm:px-4 text-center">
                         <StatusBadge value={piece.status} />
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-3 sm:px-4 text-right">
                         <Link
                           href={`/warehouse/pieces/${piece.id}`}
-                          className="text-xs font-medium text-blue-600 hover:underline"
+                          className="text-[11px] sm:text-xs font-medium text-blue-600 hover:underline"
                         >
                           Inspect →
                         </Link>

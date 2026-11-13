@@ -370,15 +370,15 @@ export default function PiecesPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="p-4">Piece Code</th>
-                  <th className="p-4">Category</th>
-                  <th className="p-4">Grade</th>
-                  <th className="p-4">Thickness</th>
-                  <th className="p-4">Dimensions</th>
-                  <th className="p-4 text-right">Weight</th>
-                  <th className="p-4">Location</th>
-                  <th className="p-4 text-right">Selling Price</th>
-                  <th className="p-4">Status</th>
+                  <th className="p-3 sm:p-4">Piece Code</th>
+                  <th className="p-4 hidden sm:table-cell">Category</th>
+                  <th className="p-4 hidden md:table-cell">Grade</th>
+                  <th className="p-4 hidden md:table-cell">Thickness</th>
+                  <th className="p-4 hidden lg:table-cell">Dimensions</th>
+                  <th className="p-3 sm:p-4 text-right">Weight</th>
+                  <th className="p-4 hidden sm:table-cell">Location</th>
+                  <th className="p-3 sm:p-4 text-right">Selling Price</th>
+                  <th className="p-3 sm:p-4 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -387,35 +387,41 @@ export default function PiecesPage() {
                     p.warehouse_name || warehouseMap[p.current_warehouse_id] || "Warehouse";
                   return (
                     <tr key={p.id} className="transition hover:bg-slate-50/80">
-                      <td className="p-4">
+                      <td className="p-3 sm:p-4">
                         <Link
-                          className="font-bold text-blue-600 hover:underline"
+                          className="font-bold text-blue-600 hover:underline block font-mono text-xs sm:text-sm"
                           href={`/warehouse/pieces/${p.id}`}
                         >
                           {p.piece_code}
                         </Link>
+                        <div className="text-[11px] text-slate-500 sm:hidden mt-0.5">
+                          {p.category} · {p.grade} ({p.thickness_mm}mm)
+                        </div>
+                        <div className="text-[11px] text-slate-400 sm:hidden">
+                          {locationName}
+                        </div>
                       </td>
-                      <td className="p-4 font-semibold text-slate-900">{p.category}</td>
-                      <td className="p-4 text-slate-700">{p.grade}</td>
-                      <td className="p-4 font-mono text-slate-700">{p.thickness_mm} mm</td>
-                      <td className="p-4 font-mono text-xs text-slate-500">
+                      <td className="p-4 font-semibold text-slate-900 hidden sm:table-cell">{p.category}</td>
+                      <td className="p-4 text-slate-700 hidden md:table-cell">{p.grade}</td>
+                      <td className="p-4 font-mono text-slate-700 hidden md:table-cell">{p.thickness_mm} mm</td>
+                      <td className="p-4 font-mono text-xs text-slate-500 hidden lg:table-cell">
                         {p.width_mm} × {p.length_mm} mm
                       </td>
-                      <td className="p-4 text-right font-mono font-medium text-slate-800">
+                      <td className="p-3 sm:p-4 text-right font-mono text-xs font-medium text-slate-800">
                         {p.weight_kg} kg
                       </td>
-                      <td className="p-4 text-xs font-medium text-slate-700 flex items-center gap-1.5 pt-5">
-                        <WarehouseIcon size={14} className="text-slate-400 shrink-0" />
+                      <td className="p-4 text-xs font-medium text-slate-700 hidden sm:table-cell items-center gap-1.5 pt-5">
+                        <WarehouseIcon size={14} className="text-slate-400 shrink-0 inline mr-1" />
                         <span>{locationName}</span>
                       </td>
-                      <td className="p-4 text-right font-mono font-bold">
+                      <td className="p-3 sm:p-4 text-right font-mono font-bold text-xs">
                         {p.selling_price ? (
                           <span className="text-slate-900">${parseFloat(p.selling_price).toFixed(2)}</span>
                         ) : (
-                          <span className="text-amber-600 text-xs font-semibold">Unpriced</span>
+                          <span className="text-amber-600 font-semibold">Unpriced</span>
                         )}
                       </td>
-                      <td className="p-4">
+                      <td className="p-3 sm:p-4 text-center">
                         <StatusBadge value={p.status} />
                       </td>
                     </tr>

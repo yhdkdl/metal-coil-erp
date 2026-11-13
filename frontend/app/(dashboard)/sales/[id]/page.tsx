@@ -173,34 +173,37 @@ export default function SaleDetailPage() {
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      <th className="p-3.5">Piece Code</th>
-                      <th className="p-3.5">Category</th>
-                      <th className="p-3.5">Grade</th>
-                      <th className="p-3.5">Dimensions</th>
-                      <th className="p-3.5 text-right">Weight</th>
-                      <th className="p-3.5 text-right">Sale Price</th>
+                      <th className="p-3 sm:p-3.5">Piece Code</th>
+                      <th className="p-3.5 hidden sm:table-cell">Category</th>
+                      <th className="p-3.5 hidden md:table-cell">Grade</th>
+                      <th className="p-3.5 hidden md:table-cell">Dimensions</th>
+                      <th className="p-3 sm:p-3.5 text-right">Weight</th>
+                      <th className="p-3 sm:p-3.5 text-right">Sale Price</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {sale.line_items.map((item, idx) => (
                       <tr key={item.piece_id || idx} className="transition hover:bg-slate-50/70">
-                        <td className="p-3.5 font-semibold">
+                        <td className="p-3 sm:p-3.5">
                           <Link
                             href={`/warehouse/pieces/${item.piece_id}`}
-                            className="text-blue-600 hover:underline"
+                            className="text-blue-600 hover:underline font-mono text-xs sm:text-sm font-semibold block"
                           >
                             {item.piece_code || item.piece_id.slice(0, 12)}
                           </Link>
+                          <div className="text-[11px] text-slate-500 sm:hidden mt-0.5">
+                            {item.category || "Piece"} · {item.grade || "Standard"}
+                          </div>
                         </td>
-                        <td className="p-3.5 font-medium text-slate-800">{item.category || "—"}</td>
-                        <td className="p-3.5 text-slate-600">{item.grade || "—"}</td>
-                        <td className="p-3.5 font-mono text-slate-600">
+                        <td className="p-3.5 font-medium text-slate-800 hidden sm:table-cell">{item.category || "—"}</td>
+                        <td className="p-3.5 text-slate-600 hidden md:table-cell">{item.grade || "—"}</td>
+                        <td className="p-3.5 font-mono text-slate-600 hidden md:table-cell">
                           {item.thickness_mm ? `${item.thickness_mm} × ${item.width_mm} × ${item.length_mm} mm` : "—"}
                         </td>
-                        <td className="p-3.5 text-right font-mono text-slate-700">
+                        <td className="p-3 sm:p-3.5 text-right font-mono text-xs sm:text-sm text-slate-700">
                           {item.weight_kg ? `${item.weight_kg} kg` : "—"}
                         </td>
-                        <td className="p-3.5 text-right font-mono font-bold text-slate-900">
+                        <td className="p-3 sm:p-3.5 text-right font-mono font-bold text-xs sm:text-sm text-slate-900">
                           ${parseFloat(item.sale_price).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                       </tr>
@@ -208,8 +211,10 @@ export default function SaleDetailPage() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t-2 border-slate-200 bg-slate-50 font-bold text-slate-900">
-                      <td colSpan={5} className="p-3.5">Total Sale Amount</td>
-                      <td className="p-3.5 text-right font-mono text-base">
+                      <td colSpan={2} className="p-3 sm:p-3.5 hidden sm:table-cell">Total Sale Amount</td>
+                      <td colSpan={2} className="p-3 text-xs sm:hidden">Total</td>
+                      <td className="hidden sm:table-cell" colSpan={3}></td>
+                      <td className="p-3 sm:p-3.5 text-right font-mono text-sm sm:text-base">
                         ${parseFloat(sale.total_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                     </tr>

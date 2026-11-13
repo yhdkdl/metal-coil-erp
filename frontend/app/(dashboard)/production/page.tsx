@@ -163,27 +163,33 @@ export default function ProductionPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="p-4">Run Terminal</th>
-                  <th className="p-4">Machine Line</th>
-                  <th className="p-4">Source Mother Coil</th>
-                  <th className="p-4">Operator</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Started At</th>
+                  <th className="p-3 sm:p-4">Run Terminal</th>
+                  <th className="p-4 hidden sm:table-cell">Machine Line</th>
+                  <th className="p-4 hidden md:table-cell">Source Mother Coil</th>
+                  <th className="p-4 hidden md:table-cell">Operator</th>
+                  <th className="p-3 sm:p-4 text-center">Status</th>
+                  <th className="p-4 hidden lg:table-cell">Started At</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredRuns.map((run) => (
                   <tr key={run.id} className="transition hover:bg-slate-50/80">
-                    <td className="p-4">
+                    <td className="p-3 sm:p-4">
                       <Link
-                        className="font-bold text-blue-600 hover:underline"
+                        className="font-bold text-blue-600 hover:underline block font-mono text-xs sm:text-sm"
                         href={`/production/${run.id}`}
                       >
                         Terminal #{run.id.slice(0, 8).toUpperCase()}
                       </Link>
+                      <div className="text-[11px] font-medium text-slate-900 sm:hidden mt-0.5">
+                        {run.machine_type}
+                      </div>
+                      <div className="text-[10px] text-slate-500 sm:hidden font-mono">
+                        {run.coil_number || `Coil #${run.coil_id.slice(0, 8)}`}
+                      </div>
                     </td>
-                    <td className="p-4 font-semibold text-slate-900">{run.machine_type}</td>
-                    <td className="p-4">
+                    <td className="p-4 font-semibold text-slate-900 hidden sm:table-cell">{run.machine_type}</td>
+                    <td className="p-4 hidden md:table-cell">
                       <Link
                         href={`/warehouse/coils/${run.coil_id}`}
                         className="font-mono font-medium text-slate-800 hover:text-amber-600 underline"
@@ -191,11 +197,11 @@ export default function ProductionPage() {
                         {run.coil_number || `Coil #${run.coil_id.slice(0, 8)}`}
                       </Link>
                     </td>
-                    <td className="p-4 text-slate-700">{run.operator_name || "Floor Operator"}</td>
-                    <td className="p-4">
+                    <td className="p-4 text-slate-700 hidden md:table-cell">{run.operator_name || "Floor Operator"}</td>
+                    <td className="p-3 sm:p-4 text-center">
                       <StatusBadge value={run.status} />
                     </td>
-                    <td className="p-4 text-xs text-slate-500 font-mono">
+                    <td className="p-4 text-xs text-slate-500 font-mono hidden lg:table-cell">
                       {new Date(run.started_at).toLocaleString(undefined, {
                         year: "numeric",
                         month: "short",

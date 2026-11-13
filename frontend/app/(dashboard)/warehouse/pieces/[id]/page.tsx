@@ -247,10 +247,10 @@ export default function PieceDetailPage() {
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      <th className="p-3.5">Timestamp</th>
-                      <th className="p-3.5">Movement Type</th>
-                      <th className="p-3.5 text-right">Weight</th>
-                      <th className="p-3.5">Log Note</th>
+                      <th className="p-3 sm:p-3.5">Timestamp</th>
+                      <th className="p-3 sm:p-3.5">Type</th>
+                      <th className="p-3 sm:p-3.5 text-right">Weight</th>
+                      <th className="p-3.5 hidden sm:table-cell">Log Note</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -263,16 +263,24 @@ export default function PieceDetailPage() {
                     ) : (
                       movements.map((m) => (
                         <tr key={m.id} className="transition hover:bg-slate-50/70">
-                          <td className="p-3.5 font-mono text-xs text-slate-600">
-                            {new Date(m.created_at).toLocaleString()}
+                          <td className="p-3 sm:p-3.5 font-mono text-xs text-slate-600">
+                            <div>{new Date(m.created_at).toLocaleDateString()}</div>
+                            <div className="text-[10px] text-slate-400">
+                              {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </div>
+                            {m.note && (
+                              <div className="text-[11px] text-slate-500 italic sm:hidden mt-0.5">
+                                {m.note}
+                              </div>
+                            )}
                           </td>
-                          <td className="p-3.5">
+                          <td className="p-3 sm:p-3.5">
                             <StatusBadge value={m.movement_type} />
                           </td>
-                          <td className="p-3.5 text-right font-mono font-bold text-slate-900">
+                          <td className="p-3 sm:p-3.5 text-right font-mono font-bold text-slate-900 text-xs">
                             {m.weight_kg} kg
                           </td>
-                          <td className="p-3.5 text-xs text-slate-500">{m.note ?? "—"}</td>
+                          <td className="p-3.5 text-xs text-slate-500 hidden sm:table-cell">{m.note ?? "—"}</td>
                         </tr>
                       ))
                     )}

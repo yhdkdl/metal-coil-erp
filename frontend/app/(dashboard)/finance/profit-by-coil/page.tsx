@@ -160,13 +160,13 @@ export default function ProfitByCoilPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="py-3 px-4">Coil Number</th>
-                  <th className="py-3 px-4 text-right">Inbound Cost</th>
-                  <th className="py-3 px-4 text-center">Sold / Unsold</th>
-                  <th className="py-3 px-4 text-right">Revenue</th>
-                  <th className="py-3 px-4 text-right">COGS</th>
-                  <th className="py-3 px-4 text-right">Gross Profit</th>
-                  <th className="py-3 px-4 text-center">Margin %</th>
+                  <th className="py-3 px-3 sm:px-4">Coil Number</th>
+                  <th className="py-3 px-4 text-right hidden sm:table-cell">Inbound Cost</th>
+                  <th className="py-3 px-4 text-center hidden md:table-cell">Sold / Unsold</th>
+                  <th className="py-3 px-3 sm:px-4 text-right">Revenue</th>
+                  <th className="py-3 px-4 text-right hidden sm:table-cell">COGS</th>
+                  <th className="py-3 px-3 sm:px-4 text-right">Gross Profit</th>
+                  <th className="py-3 px-2 sm:px-4 text-center">Margin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-xs">
@@ -177,29 +177,32 @@ export default function ProfitByCoilPage() {
                   const marginPct = rev > 0 ? (profit / rev) * 100 : 0;
                   return (
                     <tr key={row.coil_number} className="transition-colors hover:bg-slate-50">
-                      <td className="py-3 px-4 font-semibold text-slate-900 font-sans">
-                        {row.coil_number}
+                      <td className="py-3 px-3 sm:px-4 font-semibold text-slate-900 font-sans">
+                        <div className="font-mono text-xs sm:text-sm">{row.coil_number}</div>
+                        <div className="text-[11px] text-slate-500 sm:hidden">
+                          {row.pieces_sold_count} sold · {row.pieces_unsold_count} unsold
+                        </div>
                       </td>
-                      <td className="py-3 px-4 text-right text-slate-600">
+                      <td className="py-3 px-4 text-right text-slate-600 hidden sm:table-cell">
                         {formatCurrency(row.coil_cost)}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-4 text-center hidden md:table-cell">
                         <span className="font-semibold text-blue-600">{row.pieces_sold_count}</span>
                         <span className="text-slate-400"> / </span>
                         <span className="text-slate-600">{row.pieces_unsold_count}</span>
                       </td>
-                      <td className="py-3 px-4 text-right font-medium text-slate-900">
+                      <td className="py-3 px-3 sm:px-4 text-right font-medium text-slate-900">
                         {formatCurrency(rev)}
                       </td>
-                      <td className="py-3 px-4 text-right text-slate-600">
+                      <td className="py-3 px-4 text-right text-slate-600 hidden sm:table-cell">
                         {formatCurrency(cogs)}
                       </td>
-                      <td className={`py-3 px-4 text-right font-bold ${profit >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                      <td className={`py-3 px-3 sm:px-4 text-right font-bold ${profit >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                         {formatCurrency(profit)}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-2 sm:px-4 text-center">
                         <span
-                          className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold ${
+                          className={`inline-block rounded px-1.5 sm:px-2 py-0.5 text-[10px] font-bold ${
                             marginPct >= 20
                               ? "bg-emerald-50 text-emerald-700"
                               : marginPct > 0

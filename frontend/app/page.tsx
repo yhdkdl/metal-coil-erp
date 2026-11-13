@@ -137,12 +137,12 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 w-full max-w-[100vw] overflow-x-hidden">
       <Sidebar mobileOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col w-full max-w-full overflow-x-hidden">
         <Header onMenu={() => setMenuOpen(true)} />
-        <main className="flex-1 p-3.5 sm:p-6 md:p-8 pb-24 lg:pb-8 space-y-6 sm:space-y-8">
-          <div className="mx-auto max-w-7xl space-y-8">
+        <main className="flex-1 min-w-0 w-full max-w-full overflow-x-hidden p-3 sm:p-6 md:p-8 pb-24 lg:pb-8 space-y-6 sm:space-y-8">
+          <div className="mx-auto max-w-7xl w-full min-w-0 space-y-6 sm:space-y-8">
             {/* Hero / Control Center Header */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#121c29] via-[#1a2738] to-[#142030] p-6 text-white shadow-xl md:p-10 border border-slate-800">
               <div className="relative z-10 max-w-3xl">

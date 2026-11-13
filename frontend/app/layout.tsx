@@ -6,7 +6,8 @@ export const viewport: Viewport = {
   themeColor: "#101923",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 };
 
@@ -41,14 +42,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full w-full overflow-x-hidden">
       <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+        />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
       </head>
-      <body className="antialiased selection:bg-amber-400 selection:text-slate-950">
+      <body className="h-full w-full max-w-[100vw] overflow-x-hidden antialiased selection:bg-amber-400 selection:text-slate-950">
         {children}
         <PwaInstaller />
       </body>

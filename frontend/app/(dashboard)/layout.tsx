@@ -15,12 +15,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router]);
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-slate-50">
       <Sidebar mobileOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col w-full max-w-full overflow-x-hidden">
         <Header onMenu={() => setMenuOpen(true)} />
         {/* pb-24 on mobile ensures bottom navigation doesn't obstruct any tables or action bars */}
-        <main className="min-w-0 flex-1 p-3.5 sm:p-6 md:p-8 pb-24 lg:pb-10">
+        <main className="min-w-0 flex-1 w-full max-w-full overflow-x-hidden p-3 sm:p-6 md:p-8 pb-24 lg:pb-10">
           {children}
         </main>
         <BottomNav onOpenMenu={() => setMenuOpen(true)} />

@@ -219,16 +219,16 @@ export default function NewTransferPage() {
                 : "No pieces match your filter."}
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-96 overflow-y-auto overflow-x-auto w-full max-w-full">
               <table className="w-full text-left text-sm">
                 <thead className="sticky top-0 border-b border-slate-200 bg-white text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <tr>
-                    <th className="py-2.5 px-4 w-12 text-center">Select</th>
-                    <th className="py-2.5 px-4">Piece Code</th>
-                    <th className="py-2.5 px-4">Category</th>
-                    <th className="py-2.5 px-4">Grade</th>
-                    <th className="py-2.5 px-4">Dimensions</th>
-                    <th className="py-2.5 px-4 text-right">Weight</th>
+                    <th className="py-2.5 px-3 sm:px-4 w-10 text-center">Select</th>
+                    <th className="py-2.5 px-3 sm:px-4">Piece Code</th>
+                    <th className="py-2.5 px-4 hidden sm:table-cell">Category</th>
+                    <th className="py-2.5 px-4 hidden sm:table-cell">Grade</th>
+                    <th className="py-2.5 px-4 hidden md:table-cell">Dimensions</th>
+                    <th className="py-2.5 px-3 sm:px-4 text-right">Weight</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -242,7 +242,7 @@ export default function NewTransferPage() {
                           isChecked ? "bg-blue-50/70 hover:bg-blue-50" : "hover:bg-slate-50"
                         }`}
                       >
-                        <td className="py-2.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <td className="py-2.5 px-3 sm:px-4 text-center" onClick={(e) => e.stopPropagation()}>
                           <input
                             type="checkbox"
                             checked={isChecked}
@@ -250,15 +250,25 @@ export default function NewTransferPage() {
                             className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                           />
                         </td>
-                        <td className="py-2.5 px-4 font-mono text-xs font-semibold text-slate-900">
-                          {piece.piece_code}
+                        <td className="py-2.5 px-3 sm:px-4">
+                          <div className="font-mono text-xs font-semibold text-slate-900">
+                            {piece.piece_code}
+                          </div>
+                          <div className="text-[11px] text-slate-500 sm:hidden">
+                            {piece.category} · {piece.grade}
+                            <span className="text-slate-400"> ({piece.thickness_mm}mm)</span>
+                          </div>
                         </td>
-                        <td className="py-2.5 px-4 text-xs text-slate-700">{piece.category}</td>
-                        <td className="py-2.5 px-4 font-mono text-xs text-slate-700">{piece.grade}</td>
-                        <td className="py-2.5 px-4 font-mono text-xs text-slate-500">
+                        <td className="py-2.5 px-4 text-xs text-slate-700 hidden sm:table-cell">
+                          {piece.category}
+                        </td>
+                        <td className="py-2.5 px-4 font-mono text-xs text-slate-700 hidden sm:table-cell">
+                          {piece.grade}
+                        </td>
+                        <td className="py-2.5 px-4 font-mono text-xs text-slate-500 hidden md:table-cell">
                           {piece.thickness_mm} × {piece.width_mm} × {piece.length_mm} mm
                         </td>
-                        <td className="py-2.5 px-4 text-right font-mono text-xs font-medium text-slate-900">
+                        <td className="py-2.5 px-3 sm:px-4 text-right font-mono text-xs font-medium text-slate-900">
                           {Number(piece.weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
                         </td>
                       </tr>

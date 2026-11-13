@@ -169,49 +169,54 @@ export default function CoilsPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="py-3 px-4">Coil Number</th>
-                  <th className="py-3 px-4">Heat / Supplier</th>
-                  <th className="py-3 px-4">Grade</th>
-                  <th className="py-3 px-4">Dimensions</th>
-                  <th className="py-3 px-4 text-right">Weight</th>
-                  <th className="py-3 px-4 text-right">Unit Cost</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-3 sm:px-4">Coil Number</th>
+                  <th className="py-3 px-4 hidden sm:table-cell">Heat / Supplier</th>
+                  <th className="py-3 px-4 hidden md:table-cell">Grade</th>
+                  <th className="py-3 px-4 hidden md:table-cell">Dimensions</th>
+                  <th className="py-3 px-3 sm:px-4 text-right">Weight</th>
+                  <th className="py-3 px-4 text-right hidden lg:table-cell">Unit Cost</th>
+                  <th className="py-3 px-2 sm:px-4 text-center">Status</th>
+                  <th className="py-3 px-3 sm:px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredCoils.map((c) => (
                   <tr key={c.id} className="transition-colors hover:bg-slate-50/80">
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-3 sm:px-4">
                       <Link
-                        className="font-mono text-sm font-semibold text-slate-900 hover:text-blue-600 hover:underline"
+                        className="font-mono text-xs sm:text-sm font-semibold text-slate-900 hover:text-blue-600 hover:underline block"
                         href={`/warehouse/coils/${c.id}`}
                       >
                         {c.coil_number}
                       </Link>
-                      <div className="text-xs text-slate-400">
-                        {new Date(c.created_at).toLocaleDateString()}
+                      <div className="text-[11px] text-slate-500 sm:hidden mt-0.5">
+                        {c.grade} · {c.thickness_mm}×{c.width_mm}mm
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        Heat: {c.heat_number}
                       </div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 hidden sm:table-cell">
                       <div className="font-medium text-slate-800">{c.heat_number}</div>
                       <div className="text-xs text-slate-500">{c.supplier}</div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 hidden md:table-cell">
                       <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
                         {c.grade}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-slate-700 font-mono text-xs">
+                    <td className="py-3 px-4 text-slate-700 font-mono text-xs hidden md:table-cell">
                       {c.thickness_mm} × {c.width_mm} mm
                     </td>
-                    <td className="py-3 px-4 text-right font-medium text-slate-900">
-                      {Number(c.total_weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
-                      <div className="text-xs text-slate-400">
-                        {(Number(c.total_weight_kg) / 1000).toFixed(2)} tons
+                    <td className="py-3 px-3 sm:px-4 text-right font-medium text-slate-900">
+                      <span className="font-mono text-xs sm:text-sm">
+                        {Number(c.total_weight_kg).toLocaleString(undefined, { maximumFractionDigits: 1 })} kg
+                      </span>
+                      <div className="text-[10px] text-slate-400">
+                        {(Number(c.total_weight_kg) / 1000).toFixed(2)} t
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right text-slate-700">
+                    <td className="py-3 px-4 text-right text-slate-700 hidden lg:table-cell">
                       <div className="font-mono text-xs">
                         {c.cost_per_kg ? `${formatCurrency(c.cost_per_kg)}/kg` : "—"}
                       </div>
@@ -219,23 +224,23 @@ export default function CoilsPage() {
                         {formatCurrency(c.total_cost)}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-2 sm:px-4 text-center">
                       <StatusBadge value={c.status} />
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-3 sm:px-4 text-right">
                       {c.status === "IN_STOCK" ? (
                         <Link
                           href={`/production/new?coil_id=${c.id}`}
-                          className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100"
+                          className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[11px] sm:text-xs font-medium text-blue-700 hover:bg-blue-100"
                         >
-                          Cut / Slit →
+                          Cut →
                         </Link>
                       ) : (
                         <Link
                           href={`/warehouse/coils/${c.id}`}
-                          className="text-xs font-medium text-slate-500 hover:text-slate-800"
+                          className="text-[11px] sm:text-xs font-medium text-slate-500 hover:text-slate-800"
                         >
-                          View Details →
+                          View →
                         </Link>
                       )}
                     </td>

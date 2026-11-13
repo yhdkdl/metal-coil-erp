@@ -137,11 +137,11 @@ export default function InventoryValuationPage() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <th className="py-3 px-4">Warehouse Facility</th>
-                <th className="py-3 px-4 text-right">Piece Count</th>
-                <th className="py-3 px-4 text-right">Cost Basis (COGS)</th>
-                <th className="py-3 px-4 text-right">Catalog List Value</th>
-                <th className="py-3 px-4 text-right">Unrealized Spread</th>
+                <th className="py-3 px-3 sm:px-4">Warehouse</th>
+                <th className="py-3 px-4 text-right hidden sm:table-cell">Pieces</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Cost Basis</th>
+                <th className="py-3 px-3 sm:px-4 text-right">List Value</th>
+                <th className="py-3 px-4 text-right hidden md:table-cell">Unrealized Gain</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-mono text-xs">
@@ -151,19 +151,22 @@ export default function InventoryValuationPage() {
                 const spread = list - cost;
                 return (
                   <tr key={row.warehouse_id} className="transition-colors hover:bg-slate-50">
-                    <td className="py-3 px-4 font-sans text-sm font-semibold text-slate-900">
-                      {row.warehouse_name}
+                    <td className="py-3 px-3 sm:px-4 font-sans text-xs sm:text-sm font-semibold text-slate-900">
+                      <div>{row.warehouse_name}</div>
+                      <div className="text-[11px] font-mono text-slate-500 sm:hidden">
+                        {row.piece_count.toLocaleString()} pcs
+                      </div>
                     </td>
-                    <td className="py-3 px-4 text-right font-medium text-slate-800">
+                    <td className="py-3 px-4 text-right font-medium text-slate-800 hidden sm:table-cell">
                       {row.piece_count.toLocaleString()} pcs
                     </td>
-                    <td className="py-3 px-4 text-right text-slate-700">
+                    <td className="py-3 px-3 sm:px-4 text-right text-slate-700">
                       {formatCurrency(cost)}
                     </td>
-                    <td className="py-3 px-4 text-right font-semibold text-blue-600">
+                    <td className="py-3 px-3 sm:px-4 text-right font-semibold text-blue-600">
                       {formatCurrency(list)}
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-emerald-600">
+                    <td className="py-3 px-4 text-right font-bold text-emerald-600 hidden md:table-cell">
                       {formatCurrency(spread)}
                     </td>
                   </tr>

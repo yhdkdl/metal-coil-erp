@@ -210,12 +210,12 @@ export default function RevenuePage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="py-3 px-4">Period</th>
-                  <th className="py-3 px-4 text-right">Revenue</th>
-                  <th className="py-3 px-4 text-right">COGS</th>
-                  <th className="py-3 px-4 text-right">Gross Profit</th>
-                  <th className="py-3 px-4 text-center">Margin %</th>
-                  <th className="py-3 px-4 text-right">Orders</th>
+                  <th className="py-3 px-3 sm:px-4">Period</th>
+                  <th className="py-3 px-3 sm:px-4 text-right">Revenue</th>
+                  <th className="py-3 px-4 text-right hidden sm:table-cell">COGS</th>
+                  <th className="py-3 px-3 sm:px-4 text-right">Gross Profit</th>
+                  <th className="py-3 px-2 sm:px-4 text-center">Margin</th>
+                  <th className="py-3 px-4 text-right hidden md:table-cell">Orders</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-xs">
@@ -226,24 +226,27 @@ export default function RevenuePage() {
                   const marginPct = rev > 0 ? (profit / rev) * 100 : 0;
                   return (
                     <tr key={row.start} className="transition-colors hover:bg-slate-50">
-                      <td className="py-3 px-4 font-sans text-xs font-medium text-slate-900">
-                        {new Date(row.start).toLocaleDateString()}
+                      <td className="py-3 px-3 sm:px-4 font-sans text-xs font-medium text-slate-900">
+                        <div>{new Date(row.start).toLocaleDateString()}</div>
                         {row.end !== row.start && (
-                          <span className="text-slate-400"> – {new Date(row.end).toLocaleDateString()}</span>
+                          <div className="text-[10px] text-slate-400">to {new Date(row.end).toLocaleDateString()}</div>
                         )}
+                        <div className="text-[10px] text-slate-400 sm:hidden">
+                          {row.sale_count} orders
+                        </div>
                       </td>
-                      <td className="py-3 px-4 text-right font-medium text-slate-900">
+                      <td className="py-3 px-3 sm:px-4 text-right font-medium text-slate-900">
                         {formatCurrency(rev)}
                       </td>
-                      <td className="py-3 px-4 text-right text-slate-600">
+                      <td className="py-3 px-4 text-right text-slate-600 hidden sm:table-cell">
                         {formatCurrency(cogs)}
                       </td>
-                      <td className={`py-3 px-4 text-right font-bold ${profit >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                      <td className={`py-3 px-3 sm:px-4 text-right font-bold ${profit >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                         {formatCurrency(profit)}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-2 sm:px-4 text-center">
                         <span
-                          className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold ${
+                          className={`inline-block rounded px-1.5 sm:px-2 py-0.5 text-[10px] font-bold ${
                             marginPct >= 20
                               ? "bg-emerald-50 text-emerald-700"
                               : marginPct > 0
@@ -254,7 +257,7 @@ export default function RevenuePage() {
                           {marginPct.toFixed(1)}%
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right text-slate-700">
+                      <td className="py-3 px-4 text-right text-slate-700 hidden md:table-cell">
                         {row.sale_count}
                       </td>
                     </tr>

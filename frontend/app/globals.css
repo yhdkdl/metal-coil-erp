@@ -11,13 +11,20 @@
 * {
   border-color: hsl(var(--border));
   -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
 
+html,
 body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
@@ -30,9 +37,19 @@ body {
   background-size: 32px 32px;
 }
 
-/* Smooth touch scrolling on mobile tables and card containers */
-.overflow-x-auto, .overflow-y-auto {
+/* Contain horizontal scroll strictly within table containers */
+.overflow-x-auto {
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scrollbar-width: thin;
+  max-width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   scrollbar-width: thin;
 }
 
