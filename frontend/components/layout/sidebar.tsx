@@ -66,7 +66,7 @@ export function Sidebar({
       {/* Header / Brand */}
       <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
         <div className="flex items-center gap-3">
-          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-md border border-slate-700/40">
+          <div className="relative flex h-10 w-14 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-md border border-slate-700/40">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Yonas Metal Logo" className="h-full w-full object-contain" />
           </div>

@@ -25,7 +25,7 @@ export function Header({ onMenu }: { onMenu?: () => void }) {
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white p-0.5 border border-slate-200 shadow-xs lg:hidden">
+          <div className="relative flex h-8 w-12 shrink-0 items-center justify-center rounded-lg bg-white p-0.5 border border-slate-200 shadow-xs lg:hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Yonas Metal" className="h-full w-full object-contain" />
           </div>

@@ -35,7 +35,7 @@ export default function LoginPage() {
       {/* Desktop Brand Banner */}
       <div className="relative hidden overflow-hidden bg-[#101923] p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="relative z-10 flex items-center gap-3">
-          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-md border border-slate-700/50">
+          <div className="relative flex h-12 w-18 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-md border border-slate-700/50">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Yonas Metal" className="h-full w-full object-contain" />
           </div>
@@ -65,7 +65,7 @@ export default function LoginPage() {
         <form onSubmit={submit} className="w-full max-w-md space-y-6">
           {/* Mobile Logo Brand */}
           <div className="flex items-center gap-2.5 lg:hidden">
-            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-sm border border-slate-200">
+            <div className="relative flex h-11 w-16 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-sm border border-slate-200">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Yonas Metal" className="h-full w-full object-contain" />
             </div>

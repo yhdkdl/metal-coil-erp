@@ -1,5 +1,5 @@
-// Service Worker for Yonas Metal PWA - Version 4.0
-const CACHE_NAME = 'yonas-metal-v4';
+// Service Worker for Yonas Metal PWA - Version 5.0
+const CACHE_NAME = 'yonas-metal-v5';
 
 // Only cache immutable static icons and assets, NEVER HTML pages or API responses
 const IMMUTABLE_ASSETS = [

@@ -147,7 +147,7 @@ export function PwaInstaller() {
         <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-5 duration-300">
           <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-700/80 bg-[#101923]/95 p-3.5 shadow-2xl backdrop-blur-md text-white">
             <div className="flex items-center gap-3">
-              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-md border border-slate-700/50">
+              <div className="relative flex h-11 w-16 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-md border border-slate-700/50">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo.png" alt="Yonas Metal" className="h-full w-full object-contain" />
               </div>
