@@ -136,11 +136,10 @@ export default function ProductionPage() {
                 <button
                   key={st}
                   onClick={() => setStatusFilter(st)}
-                  className={`rounded-lg px-3 py-1.5 font-semibold transition ${
-                    statusFilter === st
-                      ? "bg-slate-900 text-white shadow-sm"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
+                  className={`rounded-lg px-3 py-1.5 font-semibold transition ${statusFilter === st
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
                 >
                   {st === "ALL" ? "All Runs" : st.replace("_", " ")}
                 </button>

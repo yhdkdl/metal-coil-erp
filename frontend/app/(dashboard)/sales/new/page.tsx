@@ -182,11 +182,10 @@ export default function NewSalePage() {
         <button
           type="button"
           onClick={() => changeChannel("BULK")}
-          className={`flex items-center gap-2 border-b-2 py-3 px-6 text-sm font-semibold transition-colors ${
-            channel === "BULK"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-slate-500 hover:text-slate-800"
-          }`}
+          className={`flex items-center gap-2 border-b-2 py-3 px-6 text-sm font-semibold transition-colors ${channel === "BULK"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
         >
           <span>Bulk Wholesale Order</span>
           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
@@ -197,11 +196,10 @@ export default function NewSalePage() {
         <button
           type="button"
           onClick={() => changeChannel("RETAIL")}
-          className={`flex items-center gap-2 border-b-2 py-3 px-6 text-sm font-semibold transition-colors ${
-            channel === "RETAIL"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-slate-500 hover:text-slate-800"
-          }`}
+          className={`flex items-center gap-2 border-b-2 py-3 px-6 text-sm font-semibold transition-colors ${channel === "RETAIL"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
         >
           <span>Retail Outlet Order</span>
           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
@@ -333,13 +331,12 @@ export default function NewSalePage() {
                         <tr
                           key={piece.id}
                           onClick={() => !isUnpriced && togglePiece(piece, !isSelected)}
-                          className={`transition-colors whitespace-nowrap ${
-                            isUnpriced
-                              ? "cursor-not-allowed bg-slate-50/50 opacity-50"
-                              : isSelected
+                          className={`transition-colors whitespace-nowrap ${isUnpriced
+                            ? "cursor-not-allowed bg-slate-50/50 opacity-50"
+                            : isSelected
                               ? "cursor-pointer bg-blue-50/70 hover:bg-blue-50"
                               : "cursor-pointer hover:bg-slate-50"
-                          }`}
+                            }`}
                         >
                           <td className="py-2.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                             <input

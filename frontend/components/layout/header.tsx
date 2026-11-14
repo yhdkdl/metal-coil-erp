@@ -25,15 +25,16 @@ export function Header({ onMenu }: { onMenu?: () => void }) {
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="grid h-7 w-7 place-items-center rounded-lg bg-amber-400 text-xs font-black text-slate-950 shadow-xs lg:hidden">
-            MC
+          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white p-0.5 border border-slate-200 shadow-xs lg:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Yonas Metal" className="h-full w-full object-contain" />
           </div>
           <div>
             <p className="hidden text-[10px] font-bold uppercase tracking-[.18em] text-slate-400 sm:block">
               Operations Center
             </p>
-            <p className="text-xs sm:text-sm font-semibold text-slate-800">
-              Metal Coil ERP
+            <p className="text-xs sm:text-sm font-bold text-slate-800">
+              Yonas Metal
             </p>
           </div>
         </div>

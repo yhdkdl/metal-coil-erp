@@ -156,7 +156,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <h1 className="text-3xl font-black tracking-tight md:text-5xl text-white">
-                  Metal Coil Traceability ERP
+                  Yonas Metal Precision ERP
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm md:text-base leading-relaxed text-slate-300">
                   Unified operational command: from imported raw coil intake, precision floor cutting,
@@ -454,22 +454,20 @@ export default function DashboardPage() {
                         <div className="h-2.5 w-full rounded-full bg-slate-200 overflow-hidden flex">
                           <div
                             style={{
-                              width: `${
-                                totalFinishedInStock > 0
+                              width: `${totalFinishedInStock > 0
                                   ? (totalMainStock / totalFinishedInStock) * 100
                                   : 50
-                              }%`,
+                                }%`,
                             }}
                             className="bg-blue-500 h-full transition-all duration-300"
                             title={`Main Facility: ${totalMainStock} pcs`}
                           />
                           <div
                             style={{
-                              width: `${
-                                totalFinishedInStock > 0
+                              width: `${totalFinishedInStock > 0
                                   ? (totalOutletStock / totalFinishedInStock) * 100
                                   : 50
-                              }%`,
+                                }%`,
                             }}
                             className="bg-emerald-500 h-full transition-all duration-300"
                             title={`Retail Outlet: ${totalOutletStock} pcs`}

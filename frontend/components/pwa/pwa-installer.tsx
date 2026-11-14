@@ -147,15 +147,16 @@ export function PwaInstaller() {
         <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-5 duration-300">
           <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-700/80 bg-[#101923]/95 p-3.5 shadow-2xl backdrop-blur-md text-white">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 font-bold text-slate-950 shadow-md">
-                <span className="text-sm font-black">MC</span>
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-md border border-slate-700/50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.png" alt="Yonas Metal" className="h-full w-full object-contain" />
               </div>
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                  Install Mobile App
+                  Install Yonas Metal App
                 </h4>
                 <p className="text-xs text-slate-300">
-                  Add Metal Coil to your home screen for full-screen standalone access.
+                  Add Yonas Metal to your home screen for full-screen standalone access.
                 </p>
               </div>
             </div>
@@ -239,7 +240,7 @@ export function PwaInstaller() {
                 <div>
                   <p className="font-semibold text-white">Tap &quot;Add&quot;</p>
                   <p className="mt-0.5 text-slate-400">
-                    Confirm in the top right corner. The Metal Coil app icon will appear directly on your phone&apos;s home screen!
+                    Confirm in the top right corner. The Yonas Metal app icon will appear directly on your phone&apos;s home screen!
                   </p>
                 </div>
               </div>

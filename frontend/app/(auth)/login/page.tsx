@@ -35,10 +35,11 @@ export default function LoginPage() {
       {/* Desktop Brand Banner */}
       <div className="relative hidden overflow-hidden bg-[#101923] p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="relative z-10 flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-amber-400 font-black text-slate-950">
-            MC
+          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-md border border-slate-700/50">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Yonas Metal" className="h-full w-full object-contain" />
           </div>
-          <span className="font-bold tracking-tight">Metal Coil ERP</span>
+          <span className="font-bold tracking-tight text-xl">Yonas Metal</span>
         </div>
 
         <div className="relative z-10 max-w-lg">
@@ -64,12 +65,13 @@ export default function LoginPage() {
         <form onSubmit={submit} className="w-full max-w-md space-y-6">
           {/* Mobile Logo Brand */}
           <div className="flex items-center gap-2.5 lg:hidden">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-amber-400 font-black text-slate-950 shadow-sm">
-              MC
+            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-sm border border-slate-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="Yonas Metal" className="h-full w-full object-contain" />
             </div>
             <div>
-              <div className="text-base font-bold text-slate-900">Metal Coil ERP</div>
-              <div className="text-xs text-slate-500">Mobile Operations Portal</div>
+              <div className="text-base font-bold text-slate-900">Yonas Metal</div>
+              <div className="text-xs text-slate-500">Operations Portal</div>
             </div>
           </div>
 

@@ -1,12 +1,14 @@
-// Service Worker for Metal Coil ERP PWA - Version 3.0
-const CACHE_NAME = 'metal-coil-erp-v3';
+// Service Worker for Yonas Metal PWA - Version 4.0
+const CACHE_NAME = 'yonas-metal-v4';
 
 // Only cache immutable static icons and assets, NEVER HTML pages or API responses
 const IMMUTABLE_ASSETS = [
   '/manifest.json',
+  '/logo.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/apple-touch-icon.png',
+  '/apple-touch-icon.png',
   '/icons/icon.svg',
   '/favicon.svg'
 ];

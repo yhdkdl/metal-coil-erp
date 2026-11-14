@@ -2,9 +2,9 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Metal Coil ERP",
-    short_name: "MetalCoil",
-    description: "Precision Metal Inventory, Slitting Traceability & Sales ERP",
+    name: "Yonas Metal",
+    short_name: "Yonas Metal",
+    description: "Yonas Metal - Precision Metal Inventory, Slitting Traceability & Sales ERP",
     start_url: "/",
     display: "standalone",
     background_color: "#101923",
